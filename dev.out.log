@@ -1,0 +1,27 @@
+
+> multidomain-dashboard@0.1.0 dev
+> next dev
+
+▲ Next.js 16.3.3 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.100.12:3000
+- Environments: .env.local
+✓ Ready in 4.2s
+✓ Running next.config.mjs took 42ms
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+○ Compiling middleware ...
+
+○ Compiling / ...
+ GET / 307 in 17.2s (next.js: 16.7s, application-code: 456ms)
+ GET /login 200 in 1975ms (next.js: 1723ms, application-code: 251ms)
+ GET /dashboard 200 in 2.2s (next.js: 1496ms, application-code: 681ms)
+ GET /dashboard 200 in 639ms (next.js: 101ms, application-code: 538ms)
+ GET /dashboard/tasks 200 in 1087ms (next.js: 752ms, application-code: 335ms)
+ GET /dashboard/tasks 200 in 318ms (next.js: 10ms, application-code: 308ms)
+ GET /dashboard/expenses 200 in 739ms (next.js: 460ms, application-code: 279ms)
+ GET /dashboard/calendar 200 in 867ms (next.js: 626ms, application-code: 242ms)
+ GET /dashboard/calendar 200 in 316ms (next.js: 42ms, application-code: 273ms)
