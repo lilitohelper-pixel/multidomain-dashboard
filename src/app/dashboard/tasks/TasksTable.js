@@ -10,6 +10,7 @@ const ALL_COLUMNS = [
   { key: "created_at", label: "Date of assignment", sortable: true },
   { key: "due_date", label: "Due date", sortable: true },
   { key: "priority", label: "Priority", sortable: true },
+  { key: "reminder_enabled", label: "Reminder", sortable: false },
 ];
 
 const PRIORITY_OPTIONS = ["Low", "Medium", "High"];
@@ -314,6 +315,17 @@ function TaskCell({ columnKey, task, onUpdate }) {
           </option>
         ))}
       </select>
+    );
+  }
+  if (columnKey === "reminder_enabled") {
+    return (
+      <input
+        type="checkbox"
+        checked={task.reminder_enabled}
+        onChange={(e) => onUpdate(task.id, "reminder_enabled", e.target.checked)}
+        title="Send a Telegram reminder on the due date"
+        className="h-4 w-4 cursor-pointer"
+      />
     );
   }
   return null;
