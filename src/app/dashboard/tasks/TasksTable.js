@@ -98,6 +98,18 @@ export default function TasksTable({ tasks: initialTasks }) {
     await updateField(task.id, "status", newStatus);
   }
 
+  async function deleteTask(task) {
+    if (!window.confirm(`Delete "${task.task}"? This can't be undone.`)) return;
+
+    const previous = tasks;
+    setTasks((prev) => prev.filter((t) => t.id !== task.id));
+    const { error } = await supabase.from("tasks").delete().eq("id", task.id);
+    if (error) {
+      console.error("Failed to delete task:", error.message);
+      setTasks(previous);
+    }
+  }
+
   function toggleSort(key) {
     if (sortBy === key) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -230,6 +242,7 @@ export default function TasksTable({ tasks: initialTasks }) {
                     )}
                   </th>
                 ))}
+                <th className="p-3 w-8"></th>
               </tr>
             </thead>
             <tbody>
@@ -248,6 +261,15 @@ export default function TasksTable({ tasks: initialTasks }) {
                       <TaskCell columnKey={col.key} task={task} onUpdate={updateField} />
                     </td>
                   ))}
+                  <td className="p-3">
+                    <button
+                      onClick={() => deleteTask(task)}
+                      title="Delete task"
+                      className="text-gray-400 hover:text-red-600"
+                    >
+                      🗑
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
