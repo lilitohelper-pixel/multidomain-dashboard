@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { workspaceLabel, creatorLabel } from "@/lib/displayNames";
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -11,12 +12,15 @@ function firstOfMonthISO() {
 
 export default async function TodayPage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const today = todayISO();
 
   const [{ data: tasks }, { data: events }, { data: expenses }] = await Promise.all([
-    supabase.from("tasks").select("*, workspaces(name)").eq("due_date", today).order("priority"),
-    supabase.from("calendar_events").select("*, workspaces(name)").eq("start_date", today).order("start_time"),
-    supabase.from("expenses").select("amount, workspaces(name)").gte("date", firstOfMonthISO()).lte("date", today),
+    supabase.from("tasks").select("*, workspaces(name, is_personal)").eq("due_date", today).order("priority"),
+    supabase.from("calendar_events").select("*, workspaces(name, is_personal)").eq("start_date", today).order("start_time"),
+    supabase.from("expenses").select("amount, workspaces(name, is_personal)").gte("date", firstOfMonthISO()).lte("date", today),
   ]);
 
   const monthTotal = (expenses || []).reduce((sum, e) => sum + (e.amount || 0), 0);
@@ -33,7 +37,8 @@ export default async function TodayPage() {
               <li key={t.id} className="bg-white rounded-lg border p-3 flex justify-between">
                 <span>{t.task}</span>
                 <span className="text-sm text-gray-500">
-                  {t.priority} · {t.workspaces?.name}
+                  {t.priority} · {workspaceLabel(t.workspaces)}
+                  {creatorLabel(t, user.id) && ` · ${creatorLabel(t, user.id)}`}
                 </span>
               </li>
             ))}
@@ -51,7 +56,8 @@ export default async function TodayPage() {
               <li key={e.id} className="bg-white rounded-lg border p-3 flex justify-between">
                 <span>{e.title}</span>
                 <span className="text-sm text-gray-500">
-                  {e.start_time || "All day"} · {e.workspaces?.name}
+                  {e.start_time || "All day"} · {workspaceLabel(e.workspaces)}
+                  {creatorLabel(e, user.id) && ` · ${creatorLabel(e, user.id)}`}
                 </span>
               </li>
             ))}

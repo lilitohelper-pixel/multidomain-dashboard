@@ -1,10 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
+import { workspaceLabel, creatorLabel } from "@/lib/displayNames";
 
 export default async function ExpensesPage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const { data: expenses } = await supabase
     .from("expenses")
-    .select("*, workspaces(name)")
+    .select("*, workspaces(name, is_personal)")
     .order("date", { ascending: false });
 
   const byCategory = {};
@@ -49,7 +53,8 @@ export default async function ExpensesPage() {
                 <div>
                   <p className="font-medium">{e.description || e.category}</p>
                   <p className="text-sm text-gray-500">
-                    {e.category} · {e.workspaces?.name}
+                    {e.category} · {workspaceLabel(e.workspaces)}
+                    {creatorLabel(e, user.id) && ` · Added by ${creatorLabel(e, user.id)}`}
                   </p>
                 </div>
                 <div className="text-right">

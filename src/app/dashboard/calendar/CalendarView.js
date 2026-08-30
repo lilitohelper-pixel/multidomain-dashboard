@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import multiMonthPlugin from "@fullcalendar/multimonth";
+import { workspaceLabel, creatorLabel } from "@/lib/displayNames";
 
 function toFullCalendarEvent(row) {
   const allDay = !row.start_time;
@@ -13,7 +14,7 @@ function toFullCalendarEvent(row) {
 
   return {
     id: row.id,
-    title: row.title + (row.workspaces?.name ? ` (${row.workspaces.name})` : ""),
+    title: row.title,
     start,
     end,
     allDay,
@@ -21,15 +22,34 @@ function toFullCalendarEvent(row) {
   };
 }
 
-export default function CalendarView({ events }) {
+export default function CalendarView({ events, currentUserId }) {
   const [selected, setSelected] = useState(null);
+  const calendarRef = useRef(null);
+  const containerRef = useRef(null);
   const fcEvents = events.map(toFullCalendarEvent);
 
+  useEffect(() => {
+    // FullCalendar can measure a zero/incorrect container width on the very
+    // first paint after a fresh page load, producing a broken layout (a
+    // one-time delayed recalculation isn't reliable enough — web font loading
+    // and other async reflows can shift the size afterward). Watching the
+    // container with ResizeObserver and recalculating on every real size
+    // change fixes it robustly regardless of cause or timing.
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver(() => {
+      calendarRef.current?.getApi()?.updateSize();
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div>
+    <div ref={containerRef}>
       <FullCalendar
+        ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, multiMonthPlugin]}
         initialView="dayGridMonth"
+        firstDay={1}
         headerToolbar={{
           left: "prev,next today",
           center: "title",
@@ -58,7 +78,9 @@ export default function CalendarView({ events }) {
               {selected.start_date}
               {selected.start_time ? ` ${selected.start_time.slice(0, 5)}` : " (all day)"}
               {selected.location ? ` · ${selected.location}` : ""}
-              {selected.workspaces?.name ? ` · ${selected.workspaces.name}` : ""}
+              {" · "}
+              {workspaceLabel(selected.workspaces)}
+              {creatorLabel(selected, currentUserId) && ` · Added by ${creatorLabel(selected, currentUserId)}`}
             </p>
           </div>
           <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600">

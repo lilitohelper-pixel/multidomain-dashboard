@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { creatorLabel } from "@/lib/displayNames";
 
 const ALL_COLUMNS = [
   { key: "task", label: "Task", sortable: true },
@@ -37,8 +38,8 @@ function loadColumnPrefs() {
   }
 }
 
-function sortValue(task, key) {
-  if (key === "assigned_by") return (task.users?.email || task.telegram_first_name || "").toLowerCase();
+function sortValue(task, key, currentUserId) {
+  if (key === "assigned_by") return creatorLabel(task, currentUserId).toLowerCase();
   if (key === "owner_name") return (task.owner_name || "").toLowerCase();
   if (key === "priority") return PRIORITY_ORDER[task.priority] ?? -1;
   if (key === "due_date") return task.due_date || "9999-99-99";
@@ -46,7 +47,7 @@ function sortValue(task, key) {
   return (task[key] || "").toString().toLowerCase();
 }
 
-export default function TasksTable({ tasks: initialTasks }) {
+export default function TasksTable({ tasks: initialTasks, currentUserId }) {
   const supabase = createClient();
   const [tasks, setTasks] = useState(initialTasks);
   const [columnPrefs, setColumnPrefs] = useState(defaultColumnPrefs);
@@ -147,15 +148,15 @@ export default function TasksTable({ tasks: initialTasks }) {
     }
 
     result = [...result].sort((a, b) => {
-      const av = sortValue(a, sortBy);
-      const bv = sortValue(b, sortBy);
+      const av = sortValue(a, sortBy, currentUserId);
+      const bv = sortValue(b, sortBy, currentUserId);
       if (av < bv) return sortDir === "asc" ? -1 : 1;
       if (av > bv) return sortDir === "asc" ? 1 : -1;
       return 0;
     });
 
     return result;
-  }, [tasks, searchText, filterPriority, filterStatus, filterOwner, sortBy, sortDir]);
+  }, [tasks, searchText, filterPriority, filterStatus, filterOwner, sortBy, sortDir, currentUserId]);
 
   const visibleColumns = columnPrefs
     .filter((c) => c.visible)
@@ -258,7 +259,7 @@ export default function TasksTable({ tasks: initialTasks }) {
                   </td>
                   {visibleColumns.map((col) => (
                     <td key={col.key} className="p-3">
-                      <TaskCell columnKey={col.key} task={task} onUpdate={updateField} />
+                      <TaskCell columnKey={col.key} task={task} onUpdate={updateField} currentUserId={currentUserId} />
                     </td>
                   ))}
                   <td className="p-3">
@@ -280,7 +281,7 @@ export default function TasksTable({ tasks: initialTasks }) {
   );
 }
 
-function TaskCell({ columnKey, task, onUpdate }) {
+function TaskCell({ columnKey, task, onUpdate, currentUserId }) {
   const isDone = task.status === "Done";
 
   if (columnKey === "task") {
@@ -309,7 +310,7 @@ function TaskCell({ columnKey, task, onUpdate }) {
     );
   }
   if (columnKey === "assigned_by") {
-    return <span className="text-gray-600 whitespace-nowrap">{task.users?.email || task.telegram_first_name || "—"}</span>;
+    return <span className="text-gray-600 whitespace-nowrap">{creatorLabel(task, currentUserId)}</span>;
   }
   if (columnKey === "created_at") {
     return <span className="text-gray-600 whitespace-nowrap">{task.created_at.slice(0, 10)}</span>;
