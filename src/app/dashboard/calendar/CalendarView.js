@@ -22,11 +22,23 @@ function toFullCalendarEvent(row) {
   };
 }
 
-export default function CalendarView({ events, currentUserId }) {
+function toHolidayEvent(holiday, index) {
+  return {
+    id: `holiday-${index}`,
+    title: holiday.name,
+    start: holiday.date,
+    allDay: true,
+    display: "list-item",
+    color: "#c026d3",
+    extendedProps: { isHoliday: true },
+  };
+}
+
+export default function CalendarView({ events, holidays = [], currentUserId }) {
   const [selected, setSelected] = useState(null);
   const calendarRef = useRef(null);
   const containerRef = useRef(null);
-  const fcEvents = events.map(toFullCalendarEvent);
+  const fcEvents = [...events.map(toFullCalendarEvent), ...holidays.map(toHolidayEvent)];
 
   useEffect(() => {
     // FullCalendar can measure a zero/incorrect container width on the very
@@ -64,6 +76,7 @@ export default function CalendarView({ events, currentUserId }) {
         }}
         events={fcEvents}
         eventClick={(info) => {
+          if (info.event.extendedProps.isHoliday) return;
           const row = events.find((e) => e.id === info.event.id);
           setSelected(row);
         }}
