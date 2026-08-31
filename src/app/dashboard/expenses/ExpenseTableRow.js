@@ -17,12 +17,12 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
           className="w-full min-w-[7rem] bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-1"
         />
       </td>
-      <td className="p-1 w-64">
+      <td className="p-1 w-80">
         <select
           value={e.category_id || ""}
           onChange={(ev) => onUpdateCategory(e.id, ev.target.value)}
           title={currentLabel}
-          className="w-full max-w-[15.4rem] truncate bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-1 text-sm"
+          className="w-full max-w-[19.25rem] truncate bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-1 text-sm"
         >
           {!e.category_id && <option value="">{e.category || "Uncategorized"}</option>}
           {categoryOptions.map((opt) => (
