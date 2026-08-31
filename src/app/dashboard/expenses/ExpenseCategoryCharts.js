@@ -9,6 +9,7 @@ import {
   topLevelCategory,
   secondLevelCategory,
   categoryPathLabel,
+  isIncomeCategory,
   TOP_LEVEL_CATEGORIES,
   CATEGORY_COLORS,
   formatAmount,
@@ -138,9 +139,14 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
   const [expenses, setExpenses] = useState(initialExpenses);
   useEffect(() => setExpenses(initialExpenses), [initialExpenses]);
 
+  // Every category is selectable here, including Income — the pie chart below
+  // excludes Income from the spending breakdown on its own, but the editable
+  // dropdown must be able to display and re-select whatever the bot actually
+  // assigned (e.g. Income > Salary for "got salary"), or a controlled <select>
+  // whose current value has no matching <option> silently falls back to
+  // showing the first option instead, which looks like a wrong category.
   const categoryOptions = useMemo(() => {
     return categories
-      .filter((c) => topLevelCategory(byId, c.id)?.name !== "Income")
       .map((c) => ({ id: c.id, label: categoryPathLabel(byId, c.id) }))
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [categories, byId]);
@@ -281,6 +287,9 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
                     </td>
                     <td className="p-1">
                       <div className="flex items-center gap-1">
+                        <span className={isIncomeCategory(byId, e.category_id) ? "text-forest-hunter" : "text-amber-rust"}>
+                          {isIncomeCategory(byId, e.category_id) ? "+" : "-"}
+                        </span>
                         <input
                           type="number"
                           step="0.01"

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { workspaceLabel, creatorLabel } from "@/lib/displayNames";
+import { buildCategoryIndex, isIncomeCategory, formatSignedAmount } from "@/lib/categories";
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -17,13 +18,22 @@ export default async function TodayPage() {
   } = await supabase.auth.getUser();
   const today = todayISO();
 
-  const [{ data: tasks }, { data: events }, { data: expenses }] = await Promise.all([
+  const [{ data: tasks }, { data: events }, { data: expenses }, { data: categories }] = await Promise.all([
     supabase.from("tasks").select("*, workspaces(name, is_personal)").eq("due_date", today).order("priority"),
     supabase.from("calendar_events").select("*, workspaces(name, is_personal)").eq("start_date", today).order("start_time"),
-    supabase.from("expenses").select("amount, workspaces(name, is_personal)").gte("date", firstOfMonthISO()).lte("date", today),
+    supabase
+      .from("expenses")
+      .select("amount, category_id, workspaces(name, is_personal)")
+      .gte("date", firstOfMonthISO())
+      .lte("date", today),
+    supabase.from("expense_categories").select("id, parent_id, name"),
   ]);
 
-  const monthTotal = (expenses || []).reduce((sum, e) => sum + (e.amount || 0), 0);
+  const byId = buildCategoryIndex(categories || []);
+  const monthNet = (expenses || []).reduce((sum, e) => {
+    const signed = isIncomeCategory(byId, e.category_id) ? e.amount || 0 : -(e.amount || 0);
+    return sum + signed;
+  }, 0);
 
   return (
     <div className="space-y-8">
@@ -68,8 +78,10 @@ export default async function TodayPage() {
       </section>
 
       <section>
-        <h2 className="text-lg font-medium mb-3">This month's spending</h2>
-        <p className="text-3xl font-semibold">${monthTotal.toFixed(2)}</p>
+        <h2 className="text-lg font-medium mb-3">This month's net</h2>
+        <p className={`text-3xl font-semibold ${monthNet < 0 ? "text-amber-rust" : "text-forest-hunter"}`}>
+          {formatSignedAmount(Math.abs(monthNet), monthNet >= 0)}
+        </p>
       </section>
     </div>
   );

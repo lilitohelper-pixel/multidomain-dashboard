@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { workspaceLabel, creatorLabel } from "@/lib/displayNames";
-import { buildCategoryIndex, categoryPathLabel } from "@/lib/categories";
+import { buildCategoryIndex, categoryPathLabel, isIncomeCategory } from "@/lib/categories";
 import ExpenseCategoryCharts from "./ExpenseCategoryCharts";
 
 export default async function ExpensesPage() {
@@ -58,8 +58,10 @@ export default async function ExpensesPage() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium">
-                    {e.amount != null ? `${e.currency || "USD"} ${e.amount}` : "amount not set"}
+                  <p className={`font-medium ${isIncomeCategory(byId, e.category_id) ? "text-forest-hunter" : "text-amber-rust"}`}>
+                    {e.amount != null
+                      ? `${isIncomeCategory(byId, e.category_id) ? "+" : "-"}${e.currency || "USD"} ${e.amount}`
+                      : "amount not set"}
                   </p>
                   <p className="text-sm text-stone-taupe">{e.date}</p>
                 </div>

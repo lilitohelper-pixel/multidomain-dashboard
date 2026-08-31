@@ -27,6 +27,10 @@ export function secondLevelCategory(byId, id) {
   }
 }
 
+export function isIncomeCategory(byId, id) {
+  return topLevelCategory(byId, id)?.name === "Income";
+}
+
 export function categoryPathLabel(byId, id) {
   const parts = [];
   let cur = byId.get(id);
@@ -74,4 +78,10 @@ export function formatAmount(n) {
   const [intPart, decPart] = rounded.toFixed(2).split(".");
   const withSpaces = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
   return decPart === "00" ? withSpaces : `${withSpaces}.${decPart}`;
+}
+
+// Amounts are always stored as positive numbers; the sign shown is derived
+// from the category at display time — Income adds, everything else spends.
+export function formatSignedAmount(n, isIncome) {
+  return `${isIncome ? "+" : "-"}${formatAmount(n)}`;
 }
