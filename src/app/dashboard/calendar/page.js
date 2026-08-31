@@ -8,13 +8,14 @@ export default async function CalendarPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: events }, { data: profile }] = await Promise.all([
+  const [{ data: events }, { data: profile }, { data: workspaces }] = await Promise.all([
     supabase
       .from("calendar_events")
       .select("*, workspaces(name, is_personal)")
       .order("start_date", { ascending: true })
       .order("start_time", { ascending: true, nullsFirst: true }),
     supabase.from("users").select("timezone").eq("id", user.id).single(),
+    supabase.from("workspaces").select("id, name, is_personal"),
   ]);
 
   const eventIds = (events || []).map((e) => e.id);
@@ -35,6 +36,7 @@ export default async function CalendarPage() {
         holidays={holidays}
         currentUserId={user.id}
         initialGuests={guests || []}
+        workspaces={workspaces || []}
       />
     </div>
   );

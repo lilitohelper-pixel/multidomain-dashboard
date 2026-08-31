@@ -8,6 +8,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import interactionPlugin from "@fullcalendar/interaction";
 import { createClient } from "@/lib/supabase/client";
+import { workspaceLabel } from "@/lib/displayNames";
 
 function pad2(n) {
   return String(n).padStart(2, "0");
@@ -231,7 +232,123 @@ function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRem
   );
 }
 
-export default function CalendarView({ events: initialEvents, holidays = [], currentUserId, initialGuests = [] }) {
+function NewEventModal({ draft, workspaces, onClose, onCreate }) {
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState(draft.start_date);
+  const [allDay, setAllDay] = useState(!draft.start_time);
+  const [startTime, setStartTime] = useState(draft.start_time ? draft.start_time.slice(0, 5) : "09:00");
+  const [endTime, setEndTime] = useState("");
+  const [location, setLocation] = useState("");
+  const [workspaceId, setWorkspaceId] = useState(workspaces[0]?.id || "");
+  const [saving, setSaving] = useState(false);
+
+  async function handleSubmit(ev) {
+    ev.preventDefault();
+    if (!title.trim() || !workspaceId) return;
+    setSaving(true);
+    await onCreate({
+      title: title.trim(),
+      start_date: date,
+      start_time: allDay ? null : `${startTime}:00`,
+      end_time: allDay || !endTime ? null : `${endTime}:00`,
+      location: location.trim() || null,
+      workspace_id: workspaceId,
+    });
+    setSaving(false);
+  }
+
+  return (
+    <div className="fixed inset-0 bg-bark-walnut/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <form
+        onSubmit={handleSubmit}
+        className="bg-stone-parchment rounded-lg border p-4 w-full max-w-md space-y-2"
+        onClick={(ev) => ev.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <input
+            type="text"
+            autoFocus
+            value={title}
+            onChange={(ev) => setTitle(ev.target.value)}
+            placeholder="Event title"
+            className="font-medium bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-1 flex-1 min-w-0"
+          />
+          <button type="button" onClick={onClose} className="text-stone-grey hover:text-bark-umber shrink-0">
+            ✕
+          </button>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <input
+            type="date"
+            value={date}
+            onChange={(ev) => setDate(ev.target.value)}
+            className="border rounded px-2 py-1"
+          />
+          <label className="flex items-center gap-2 cursor-pointer ml-1">
+            <span className="text-bark-umber">All day</span>
+            <span className="relative inline-flex items-center shrink-0">
+              <input
+                type="checkbox"
+                checked={allDay}
+                onChange={(ev) => setAllDay(ev.target.checked)}
+                className="sr-only peer"
+              />
+              <span className="w-9 h-5 bg-stone-grey rounded-full peer-checked:bg-forest-hunter transition-colors" />
+              <span className="absolute left-0.5 top-0.5 w-4 h-4 bg-stone-parchment rounded-full transition-transform peer-checked:translate-x-4" />
+            </span>
+          </label>
+        </div>
+        {!allDay && (
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <input
+              type="time"
+              value={startTime}
+              onChange={(ev) => setStartTime(ev.target.value)}
+              className="border rounded px-2 py-1"
+            />
+            <span className="text-stone-taupe">to</span>
+            <input
+              type="time"
+              value={endTime}
+              onChange={(ev) => setEndTime(ev.target.value)}
+              className="border rounded px-2 py-1"
+            />
+          </div>
+        )}
+        <input
+          type="text"
+          value={location}
+          onChange={(ev) => setLocation(ev.target.value)}
+          placeholder="Location"
+          className="w-full border rounded px-2 py-1 text-sm"
+        />
+        {workspaces.length > 1 && (
+          <select
+            value={workspaceId}
+            onChange={(ev) => setWorkspaceId(ev.target.value)}
+            className="w-full border rounded px-2 py-1 text-sm"
+          >
+            {workspaces.map((w) => (
+              <option key={w.id} value={w.id}>
+                {workspaceLabel(w)}
+              </option>
+            ))}
+          </select>
+        )}
+        <button
+          type="submit"
+          disabled={!title.trim() || !workspaceId || saving}
+          className="w-full bg-forest-hunter text-stone-parchment text-sm px-4 py-1.5 rounded-md disabled:opacity-50"
+        >
+          {saving ? "Adding..." : "Add meeting"}
+        </button>
+        <p className="text-[10px] text-stone-taupe">You can invite guests after creating the meeting.</p>
+      </form>
+    </div>
+  );
+}
+
+export default function CalendarView({ events: initialEvents, holidays = [], currentUserId, initialGuests = [], workspaces = [] }) {
   const router = useRouter();
   const supabase = createClient();
   const [events, setEvents] = useState(initialEvents);
@@ -240,6 +357,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
   useEffect(() => setGuests(initialGuests), [initialGuests]);
 
   const [editingEventId, setEditingEventId] = useState(null);
+  const [draftEvent, setDraftEvent] = useState(null);
   const calendarRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -269,6 +387,22 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
     setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, ...changes } : e)));
     const { error } = await supabase.from("calendar_events").update(changes).eq("id", id);
     if (error) console.error("Failed to update event:", error.message);
+    router.refresh();
+  }
+
+  async function createEvent(fields) {
+    const { data, error } = await supabase
+      .from("calendar_events")
+      .insert({ ...fields, created_by_user_id: currentUserId })
+      .select("*, workspaces(name, is_personal)")
+      .single();
+    if (error) {
+      console.error("Failed to create event:", error.message);
+      return;
+    }
+    setEvents((prev) => [...prev, data]);
+    setDraftEvent(null);
+    setEditingEventId(data.id); // jump straight into edit mode so guests can be added right away
     router.refresh();
   }
 
@@ -356,6 +490,10 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
               const mm = earliestMinutes % 60;
               calendarRef.current?.getApi()?.scrollToTime(`${pad2(hh)}:${pad2(mm)}:00`);
             }}
+            dateClick={(info) => {
+              const parts = dateTimeParts(info.date);
+              setDraftEvent({ start_date: parts.date, start_time: info.allDay ? null : parts.time });
+            }}
             eventClick={(info) => {
               if (!info.event.extendedProps.isHoliday) setEditingEventId(info.event.id);
             }}
@@ -435,6 +573,10 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
           onAddGuest={addGuest}
           onRemoveGuest={removeGuest}
         />
+      )}
+
+      {draftEvent && (
+        <NewEventModal draft={draftEvent} workspaces={workspaces} onClose={() => setDraftEvent(null)} onCreate={createEvent} />
       )}
     </div>
   );
