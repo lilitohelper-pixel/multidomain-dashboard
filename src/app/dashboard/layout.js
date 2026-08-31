@@ -30,9 +30,6 @@ export default async function DashboardLayout({ children }) {
             <Link href="/dashboard/calendar" className="hover:text-blue-600">
               Calendar
             </Link>
-            <Link href="/dashboard/categories" className="hover:text-blue-600">
-              Categories
-            </Link>
           </nav>
           <div className="flex items-center gap-4 text-sm text-gray-600">
             <span>{user.email}</span>
