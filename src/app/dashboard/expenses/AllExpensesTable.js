@@ -46,15 +46,16 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
             <tr className="bg-forest-deep text-stone-parchment text-left">
               <th className="p-2 font-medium">Expense name</th>
               <th className="p-2 font-medium">Category</th>
-              <th className="p-2 font-medium">Date</th>
-              <th className="p-2 font-medium">Amount</th>
-              <th className="p-2 font-medium w-8"></th>
+              <th className="p-2 font-medium w-36">Date</th>
+              <th className="p-2 font-medium w-28">Amount</th>
+              <th className="p-2 font-medium w-14">Currency</th>
+              <th className="p-2 font-medium w-14"></th>
             </tr>
           </thead>
           <tbody>
             {pageRows.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-4 text-center text-stone-taupe">
+                <td colSpan={6} className="p-4 text-center text-stone-taupe">
                   No expenses yet — send one to your bot on Telegram.
                 </td>
               </tr>

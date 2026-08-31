@@ -223,9 +223,10 @@ export default function ExpenseCategoryCharts({
               <tr className="bg-forest-deep text-stone-parchment text-left">
                 <th className="p-2 font-medium">Expense name</th>
                 <th className="p-2 font-medium">Category</th>
-                <th className="p-2 font-medium">Date</th>
-                <th className="p-2 font-medium">Amount</th>
-                <th className="p-2 font-medium w-8"></th>
+                <th className="p-2 font-medium w-36">Date</th>
+                <th className="p-2 font-medium w-28">Amount</th>
+                <th className="p-2 font-medium w-14">Currency</th>
+                <th className="p-2 font-medium w-14"></th>
               </tr>
             </thead>
             <tbody>
@@ -235,6 +236,7 @@ export default function ExpenseCategoryCharts({
                   return (
                     <tr key={`empty-${i}`} className={i % 2 === 0 ? "bg-stone-linen" : "bg-stone-parchment"}>
                       <td className="p-2">&nbsp;</td>
+                      <td className="p-2"></td>
                       <td className="p-2"></td>
                       <td className="p-2"></td>
                       <td className="p-2"></td>

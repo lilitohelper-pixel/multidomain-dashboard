@@ -32,15 +32,15 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
           ))}
         </select>
       </td>
-      <td className="p-1">
+      <td className="p-1 w-36">
         <input
           type="date"
           defaultValue={e.date}
           onChange={(ev) => ev.target.value && onUpdate(e.id, { date: ev.target.value })}
-          className="bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-1"
+          className="w-full bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-1"
         />
       </td>
-      <td className="p-1">
+      <td className="p-1 w-28">
         <div className="flex items-center gap-1">
           <span
             className={`w-3 shrink-0 text-center ${
@@ -57,12 +57,14 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
               const v = ev.target.value === "" ? null : Number(ev.target.value);
               if (v !== e.amount) onUpdate(e.id, { amount: v });
             }}
-            className="w-16 bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-1"
+            className="w-full min-w-0 bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-1"
           />
-          <span className="text-stone-taupe text-xs">{e.currency || "USD"}</span>
         </div>
       </td>
-      <td className="p-1 text-center">
+      <td className="p-1 w-14 text-center">
+        <span className="text-stone-taupe text-xs">{e.currency || "USD"}</span>
+      </td>
+      <td className="p-1 w-14 text-center">
         <button
           onClick={() => {
             if (window.confirm(`Delete "${e.description || "this expense"}"? This can't be undone.`)) onDelete(e.id);
