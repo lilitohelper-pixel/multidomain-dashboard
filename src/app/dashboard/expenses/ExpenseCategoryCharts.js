@@ -7,7 +7,7 @@ import { useExpenseEditor } from "./useExpenseEditor";
 import ExpenseTableRow from "./ExpenseTableRow";
 import SavingsCategoriesManager from "./SavingsCategoriesManager";
 
-const VISIBLE_ROWS = 15;
+const VISIBLE_ROWS = 10;
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
