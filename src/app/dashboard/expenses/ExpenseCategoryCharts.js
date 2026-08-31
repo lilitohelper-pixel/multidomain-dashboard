@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { createClient } from "@/lib/supabase/client";
 import {
   buildCategoryIndex,
   topLevelCategory,
@@ -128,8 +130,31 @@ function DropdownItem({ active, onClick, children }) {
   );
 }
 
-export default function ExpenseCategoryCharts({ expenses, categories, workspaces, savingsParentId, initialCustomSavings }) {
+export default function ExpenseCategoryCharts({ expenses: initialExpenses, categories, workspaces, savingsParentId, initialCustomSavings }) {
+  const router = useRouter();
+  const supabase = createClient();
   const byId = useMemo(() => buildCategoryIndex(categories), [categories]);
+  const [expenses, setExpenses] = useState(initialExpenses);
+  useEffect(() => setExpenses(initialExpenses), [initialExpenses]);
+
+  const categoryOptions = useMemo(() => {
+    return categories
+      .filter((c) => topLevelCategory(byId, c.id)?.name !== "Income")
+      .map((c) => ({ id: c.id, label: categoryPathLabel(byId, c.id) }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [categories, byId]);
+
+  async function updateExpense(id, changes) {
+    setExpenses((prev) => prev.map((e) => (e.id === id ? { ...e, ...changes } : e)));
+    const { error } = await supabase.from("expenses").update(changes).eq("id", id);
+    if (error) console.error("Failed to update expense:", error.message);
+    router.refresh();
+  }
+
+  function updateCategory(id, categoryId) {
+    updateExpense(id, { category_id: categoryId, category: categoryPathLabel(byId, categoryId) });
+  }
+
   const earliestISO = useMemo(() => earliestDate(expenses), [expenses]);
   const months = useMemo(() => listMonthsSince(earliestISO), [earliestISO]);
   const years = useMemo(() => listYearsSince(earliestISO), [earliestISO]);
@@ -209,12 +234,65 @@ export default function ExpenseCategoryCharts({ expenses, categories, workspaces
             <tbody>
               {Array.from({ length: 10 }).map((_, i) => {
                 const e = last10[i];
+                if (!e) {
+                  return (
+                    <tr key={`empty-${i}`} className={i % 2 === 0 ? "bg-green-50" : "bg-white"}>
+                      <td className="p-3">&nbsp;</td>
+                      <td className="p-3"></td>
+                      <td className="p-3"></td>
+                      <td className="p-3"></td>
+                    </tr>
+                  );
+                }
                 return (
-                  <tr key={e ? e.id : `empty-${i}`} className={i % 2 === 0 ? "bg-green-50" : "bg-white"}>
-                    <td className="p-3">{e?.description || ""}</td>
-                    <td className="p-3">{e ? byId.get(e.category_id)?.name || e.category || "Uncategorized" : ""}</td>
-                    <td className="p-3">{e?.date || ""}</td>
-                    <td className="p-3">{e ? `${formatAmount(e.amount)} ${e.currency || "USD"}` : ""}</td>
+                  <tr key={e.id} className={i % 2 === 0 ? "bg-green-50" : "bg-white"}>
+                    <td className="p-1">
+                      <input
+                        type="text"
+                        defaultValue={e.description || ""}
+                        onBlur={(ev) =>
+                          ev.target.value !== (e.description || "") && updateExpense(e.id, { description: ev.target.value })
+                        }
+                        className="w-full min-w-[8rem] bg-transparent border-none focus:ring-1 focus:ring-blue-400 rounded px-2 py-2"
+                      />
+                    </td>
+                    <td className="p-1">
+                      <select
+                        value={e.category_id || ""}
+                        onChange={(ev) => updateCategory(e.id, ev.target.value)}
+                        className="w-full min-w-[9rem] bg-transparent border-none focus:ring-1 focus:ring-blue-400 rounded px-2 py-2 text-sm"
+                      >
+                        {!e.category_id && <option value="">{e.category || "Uncategorized"}</option>}
+                        {categoryOptions.map((opt) => (
+                          <option key={opt.id} value={opt.id}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="p-1">
+                      <input
+                        type="date"
+                        defaultValue={e.date}
+                        onChange={(ev) => ev.target.value && updateExpense(e.id, { date: ev.target.value })}
+                        className="bg-transparent border-none focus:ring-1 focus:ring-blue-400 rounded px-2 py-2"
+                      />
+                    </td>
+                    <td className="p-1">
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          step="0.01"
+                          defaultValue={e.amount ?? ""}
+                          onBlur={(ev) => {
+                            const v = ev.target.value === "" ? null : Number(ev.target.value);
+                            if (v !== e.amount) updateExpense(e.id, { amount: v });
+                          }}
+                          className="w-20 bg-transparent border-none focus:ring-1 focus:ring-blue-400 rounded px-2 py-2"
+                        />
+                        <span className="text-gray-500">{e.currency || "USD"}</span>
+                      </div>
+                    </td>
                   </tr>
                 );
               })}
