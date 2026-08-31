@@ -189,17 +189,22 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
     return `${MONTH_NAMES[selectedMonth.month]} ${selectedMonth.year}`;
   }, [periodMode, range, selectedMonth, selectedYear]);
 
+  // Category is not required here — an expense with no category_id (an old
+  // row from before this feature, or one Claude couldn't confidently place)
+  // still counts as real spending and gets bucketed under "Other" below,
+  // rather than silently vanishing from the chart's total.
   const filtered = useMemo(
-    () => expenses.filter((e) => e.category_id && e.date >= range.start && e.date <= range.end),
+    () => expenses.filter((e) => e.amount != null && e.date >= range.start && e.date <= range.end),
     [expenses, range.start, range.end]
   );
 
   const topLevelData = useMemo(() => {
     const sums = new Map();
     for (const e of filtered) {
-      const top = topLevelCategory(byId, e.category_id);
-      if (!top || top.name === "Income") continue;
-      sums.set(top.name, (sums.get(top.name) || 0) + (e.amount || 0));
+      const top = e.category_id ? topLevelCategory(byId, e.category_id) : null;
+      const name = top ? top.name : "Other";
+      if (name === "Income") continue;
+      sums.set(name, (sums.get(name) || 0) + (e.amount || 0));
     }
     return TOP_LEVEL_CATEGORIES.filter((name) => sums.get(name) > 0).map((name) => ({
       name,
@@ -211,10 +216,11 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
     if (!selectedCategory) return [];
     const sums = new Map();
     for (const e of filtered) {
-      const top = topLevelCategory(byId, e.category_id);
-      if (!top || top.name !== selectedCategory) continue;
-      const second = secondLevelCategory(byId, e.category_id);
-      const key = second ? second.name : `${top.name} (general)`;
+      const top = e.category_id ? topLevelCategory(byId, e.category_id) : null;
+      const topName = top ? top.name : "Other";
+      if (topName !== selectedCategory) continue;
+      const second = e.category_id ? secondLevelCategory(byId, e.category_id) : null;
+      const key = second ? second.name : e.category_id ? `${topName} (general)` : "Uncategorized";
       sums.set(key, (sums.get(key) || 0) + (e.amount || 0));
     }
     return [...sums.entries()].map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
@@ -228,8 +234,8 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
   return (
     <section className="space-y-4">
       <div className="grid md:grid-cols-2 gap-6 items-start">
-        <div className="bg-stone-parchment rounded-lg border overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-stone-parchment rounded-lg border overflow-x-auto">
+          <table className="w-full text-sm min-w-[36rem]">
             <thead>
               <tr className="bg-forest-deep text-stone-parchment text-left">
                 <th className="p-3 font-medium">Expense name</th>
