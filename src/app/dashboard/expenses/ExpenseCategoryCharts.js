@@ -5,6 +5,7 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recha
 import { topLevelCategory, secondLevelCategory, TOP_LEVEL_CATEGORIES, CATEGORY_COLORS, formatAmount } from "@/lib/categories";
 import { useExpenseEditor } from "./useExpenseEditor";
 import ExpenseTableRow from "./ExpenseTableRow";
+import AddExpenseForm from "./AddExpenseForm";
 import SavingsCategoriesManager from "./SavingsCategoriesManager";
 
 const VISIBLE_ROWS = 10;
@@ -125,10 +126,18 @@ function DropdownItem({ active, onClick, children }) {
   );
 }
 
-export default function ExpenseCategoryCharts({ expenses: initialExpenses, categories, workspaces, savingsParentId, initialCustomSavings }) {
-  const { expenses, byId, categoryOptions, updateExpense, updateCategory, deleteExpense } = useExpenseEditor(
+export default function ExpenseCategoryCharts({
+  expenses: initialExpenses,
+  categories,
+  workspaces,
+  savingsParentId,
+  initialCustomSavings,
+  currentUserId,
+}) {
+  const { expenses, byId, categoryOptions, updateExpense, updateCategory, deleteExpense, addExpense } = useExpenseEditor(
     initialExpenses,
-    categories
+    categories,
+    currentUserId
   );
 
   const earliestISO = useMemo(() => earliestDate(expenses), [expenses]);
@@ -205,6 +214,8 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
 
   return (
     <section className="space-y-4">
+      <AddExpenseForm categoryOptions={categoryOptions} workspaces={workspaces} onAdd={addExpense} />
+
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-stone-parchment rounded-lg border overflow-x-auto">
           <table className="w-full text-sm min-w-[30rem]">

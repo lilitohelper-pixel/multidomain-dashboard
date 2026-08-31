@@ -4,6 +4,9 @@ import AllExpensesTable from "./AllExpensesTable";
 
 export default async function ExpensesPage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const { data: savingsParent } = await supabase
     .from("expense_categories")
     .select("id")
@@ -35,6 +38,7 @@ export default async function ExpensesPage() {
         workspaces={workspaces || []}
         savingsParentId={savingsParent?.id || null}
         initialCustomSavings={customSavings || []}
+        currentUserId={user.id}
       />
 
       <section>

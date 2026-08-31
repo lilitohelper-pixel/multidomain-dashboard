@@ -8,7 +8,7 @@ import { buildCategoryIndex, categoryPathLabel } from "@/lib/categories";
 // Shared editing logic for both the "recent expenses" preview table and the
 // full paginated "All expenses" table, so an edit made in either place uses
 // the same update/refresh behavior instead of two separate implementations.
-export function useExpenseEditor(initialExpenses, categories) {
+export function useExpenseEditor(initialExpenses, categories, currentUserId) {
   const router = useRouter();
   const supabase = createClient();
   const byId = useMemo(() => buildCategoryIndex(categories), [categories]);
@@ -46,5 +46,31 @@ export function useExpenseEditor(initialExpenses, categories) {
     router.refresh();
   }
 
-  return { expenses, byId, categoryOptions, updateExpense, updateCategory, deleteExpense };
+  async function addExpense({ description, categoryId, date, amount, currency, workspaceId }) {
+    const category = categoryId ? categoryPathLabel(byId, categoryId) : null;
+    const { data, error } = await supabase
+      .from("expenses")
+      .insert({
+        description,
+        category_id: categoryId || null,
+        category,
+        date,
+        amount,
+        currency: currency || "USD",
+        workspace_id: workspaceId,
+        created_by_user_id: currentUserId,
+        source: "manual",
+      })
+      .select("*, workspaces(name, is_personal)")
+      .single();
+    if (error) {
+      console.error("Failed to add expense:", error.message);
+      return { error };
+    }
+    setExpenses((prev) => [data, ...prev]);
+    router.refresh();
+    return { data };
+  }
+
+  return { expenses, byId, categoryOptions, updateExpense, updateCategory, deleteExpense, addExpense };
 }

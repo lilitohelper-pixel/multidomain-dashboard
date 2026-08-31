@@ -18,6 +18,11 @@ function ymd(year, month0, day) {
   return `${year}-${pad2(month0 + 1)}-${pad2(day)}`;
 }
 
+function timeToMinutes(timeStr) {
+  const [h, m] = timeStr.split(":").map(Number);
+  return h * 60 + m;
+}
+
 function todayISO() {
   const now = new Date();
   return ymd(now.getFullYear(), now.getMonth(), now.getDate());
@@ -54,7 +59,7 @@ function toFullCalendarEvent(row) {
   };
 }
 
-function DayCard({ label, dateISO, dayEvents, variant, onSelectDate }) {
+function DayCard({ label, dayEvents, variant, onSelectEvent }) {
   const isToday = variant === "today";
   return (
     <div
@@ -70,7 +75,7 @@ function DayCard({ label, dateISO, dayEvents, variant, onSelectDate }) {
           {dayEvents.map((e) => (
             <li key={e.id}>
               <button
-                onClick={() => onSelectDate(dateISO)}
+                onClick={() => onSelectEvent(e)}
                 className={`w-full flex items-center justify-between gap-3 text-left rounded px-1 -mx-1 ${
                   isToday ? "hover:bg-white/10" : "hover:bg-stone-linen"
                 }`}
@@ -137,70 +142,75 @@ function GuestList({ eventId, guests, onAdd, onRemove }) {
   );
 }
 
-function EditableEventRow({ event: e, isEditing, onStartEdit, onStopEdit, onUpdate, currentUserId, guests, onAddGuest, onRemoveGuest }) {
-  if (!isEditing) {
-    return (
-      <li>
-        <button
-          onClick={onStartEdit}
-          className="w-full text-left flex items-center justify-between gap-4 hover:bg-stone-linen rounded px-1 py-0.5"
-        >
-          <span>{e.title}</span>
-          <span className="text-sm text-stone-taupe whitespace-nowrap">
-            {e.start_time ? e.start_time.slice(0, 5) : "All day"}
-            {e.location ? ` · ${e.location}` : ""}
-            {" · "}
-            {workspaceLabel(e.workspaces)}
-            {creatorLabel(e, currentUserId) && ` · Added by ${creatorLabel(e, currentUserId)}`}
-          </span>
-        </button>
-      </li>
-    );
-  }
-
+function EventRow({ event: e, onOpen, currentUserId }) {
   return (
-    <li className="bg-stone-linen rounded-md p-3 space-y-2">
-      <div className="flex items-center justify-between gap-2">
+    <li>
+      <button
+        onClick={() => onOpen(e)}
+        className="w-full text-left flex items-center justify-between gap-4 hover:bg-stone-linen rounded px-1 py-0.5"
+      >
+        <span>{e.title}</span>
+        <span className="text-sm text-stone-taupe whitespace-nowrap">
+          {e.start_time ? e.start_time.slice(0, 5) : "All day"}
+          {e.location ? ` · ${e.location}` : ""}
+          {" · "}
+          {workspaceLabel(e.workspaces)}
+          {creatorLabel(e, currentUserId) && ` · Added by ${creatorLabel(e, currentUserId)}`}
+        </span>
+      </button>
+    </li>
+  );
+}
+
+function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRemoveGuest }) {
+  return (
+    <div className="fixed inset-0 bg-bark-walnut/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div
+        className="bg-stone-parchment rounded-lg border p-4 w-full max-w-md space-y-2"
+        onClick={(ev) => ev.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <input
+            type="text"
+            defaultValue={e.title}
+            onBlur={(ev) => ev.target.value !== e.title && onUpdate(e.id, { title: ev.target.value })}
+            className="font-medium bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-1 flex-1 min-w-0"
+          />
+          <button onClick={onClose} className="text-stone-grey hover:text-bark-umber shrink-0">
+            ✕
+          </button>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <input
+            type="date"
+            defaultValue={e.start_date}
+            onChange={(ev) => ev.target.value && onUpdate(e.id, { start_date: ev.target.value })}
+            className="border rounded px-2 py-1"
+          />
+          <input
+            type="time"
+            defaultValue={e.start_time ? e.start_time.slice(0, 5) : ""}
+            onChange={(ev) => onUpdate(e.id, { start_time: ev.target.value || null })}
+            className="border rounded px-2 py-1"
+          />
+          <span className="text-stone-taupe">to</span>
+          <input
+            type="time"
+            defaultValue={e.end_time ? e.end_time.slice(0, 5) : ""}
+            onChange={(ev) => onUpdate(e.id, { end_time: ev.target.value || null })}
+            className="border rounded px-2 py-1"
+          />
+        </div>
         <input
           type="text"
-          defaultValue={e.title}
-          onBlur={(ev) => ev.target.value !== e.title && onUpdate(e.id, { title: ev.target.value })}
-          className="font-medium bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-1 flex-1 min-w-0"
+          defaultValue={e.location || ""}
+          placeholder="Location"
+          onBlur={(ev) => ev.target.value !== (e.location || "") && onUpdate(e.id, { location: ev.target.value || null })}
+          className="w-full border rounded px-2 py-1 text-sm"
         />
-        <button onClick={onStopEdit} className="text-sm text-forest-hunter hover:underline shrink-0">
-          Done
-        </button>
+        <GuestList eventId={e.id} guests={guests} onAdd={onAddGuest} onRemove={onRemoveGuest} />
       </div>
-      <div className="flex flex-wrap items-center gap-2 text-sm">
-        <input
-          type="date"
-          defaultValue={e.start_date}
-          onChange={(ev) => ev.target.value && onUpdate(e.id, { start_date: ev.target.value })}
-          className="border rounded px-2 py-1"
-        />
-        <input
-          type="time"
-          defaultValue={e.start_time ? e.start_time.slice(0, 5) : ""}
-          onChange={(ev) => onUpdate(e.id, { start_time: ev.target.value || null })}
-          className="border rounded px-2 py-1"
-        />
-        <span className="text-stone-taupe">to</span>
-        <input
-          type="time"
-          defaultValue={e.end_time ? e.end_time.slice(0, 5) : ""}
-          onChange={(ev) => onUpdate(e.id, { end_time: ev.target.value || null })}
-          className="border rounded px-2 py-1"
-        />
-      </div>
-      <input
-        type="text"
-        defaultValue={e.location || ""}
-        placeholder="Location"
-        onBlur={(ev) => ev.target.value !== (e.location || "") && onUpdate(e.id, { location: ev.target.value || null })}
-        className="w-full border rounded px-2 py-1 text-sm"
-      />
-      <GuestList eventId={e.id} guests={guests} onAdd={onAddGuest} onRemove={onRemoveGuest} />
-    </li>
+    </div>
   );
 }
 
@@ -224,6 +234,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
   }, [holidays]);
 
   const fcEvents = events.map(toFullCalendarEvent);
+  const editingEvent = editingEventId ? events.find((e) => e.id === editingEventId) || null : null;
 
   const todayDate = todayISO();
   const tomorrowDate = tomorrowISO();
@@ -270,142 +281,156 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
   return (
     <div className="grid md:grid-cols-[220px_1fr] gap-6 items-start">
       <div className="space-y-4">
-        <DayCard label="Today" dateISO={todayDate} dayEvents={todayEvents} variant="today" onSelectDate={setSelectedDate} />
+        <DayCard label="Today" dayEvents={todayEvents} variant="today" onSelectEvent={(e) => setEditingEventId(e.id)} />
         <DayCard
           label="Tomorrow"
-          dateISO={tomorrowDate}
           dayEvents={tomorrowEvents}
           variant="tomorrow"
-          onSelectDate={setSelectedDate}
+          onSelectEvent={(e) => setEditingEventId(e.id)}
         />
       </div>
 
       <div ref={containerRef}>
-      <div className="bg-stone-parchment rounded-lg border overflow-hidden p-4">
-      <FullCalendar
-        ref={calendarRef}
-        plugins={[dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin]}
-        initialView="dayGridMonth"
-        firstDay={1}
-        headerToolbar={{
-          left: "prev,next gotoToday",
-          center: "title",
-          right: "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear",
-        }}
-        buttonText={{
-          multiMonthYear: "Year",
-          dayGridMonth: "Month",
-          timeGridWeek: "Week",
-          timeGridDay: "Day",
-        }}
-        height={720}
-        dayMaxEventRows={3}
-        customButtons={{
-          // Named "gotoToday" rather than the reserved "today" — FullCalendar
-          // auto-disables a button named "today" whenever the current view
-          // already contains today's date (the common case), which silently
-          // swallows clicks exactly when someone would want to use it.
-          gotoToday: {
-            text: "Today",
-            click: () => {
-              calendarRef.current?.getApi()?.today();
-              setSelectedDate(todayISO());
-            },
-          },
-        }}
-        events={fcEvents}
-        editable
-        dateClick={(info) => setSelectedDate(info.dateStr.slice(0, 10))}
-        eventClick={(info) => setSelectedDate(info.event.startStr.slice(0, 10))}
-        eventDrop={(info) => {
-          const startParts = dateTimeParts(info.event.start);
-          const changes = { start_date: startParts.date };
-          if (info.event.allDay) {
-            changes.start_time = null;
-            changes.end_time = null;
-          } else {
-            changes.start_time = startParts.time;
-            changes.end_time = info.event.end ? dateTimeParts(info.event.end).time : null;
-          }
-          updateEvent(info.event.id, changes);
-        }}
-        eventResize={(info) => {
-          if (!info.event.end) return;
-          updateEvent(info.event.id, { end_time: dateTimeParts(info.event.end).time });
-        }}
-        dayCellDidMount={(arg) => {
-          // Inserted imperatively (not via dayCellContent) because that hook
-          // only replaces content *inside* FullCalendar's day-number badge —
-          // a full-width flex row placed there fights the badge's own sizing
-          // and overlaps the number. Flexing the day-top container itself and
-          // inserting a sibling label keeps the badge's own layout intact.
-          const dateStr = ymd(arg.date.getFullYear(), arg.date.getMonth(), arg.date.getDate());
-          const holidayName = holidayByDate[dateStr];
-          if (!holidayName) return;
+        <div className="bg-stone-parchment rounded-lg border overflow-hidden p-4">
+          <FullCalendar
+            ref={calendarRef}
+            plugins={[dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            firstDay={1}
+            headerToolbar={{
+              left: "prev,next gotoToday",
+              center: "title",
+              right: "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear",
+            }}
+            buttonText={{
+              multiMonthYear: "Year",
+              dayGridMonth: "Month",
+              timeGridWeek: "Week",
+              timeGridDay: "Day",
+            }}
+            height={720}
+            expandRows
+            dayMaxEventRows={3}
+            eventTimeFormat={{ hour: "numeric", minute: "2-digit", omitZeroMinute: true, meridiem: "short" }}
+            customButtons={{
+              // Named "gotoToday" rather than the reserved "today" — FullCalendar
+              // auto-disables a button named "today" whenever the current view
+              // already contains today's date (the common case), which silently
+              // swallows clicks exactly when someone would want to use it.
+              gotoToday: {
+                text: "Today",
+                click: () => {
+                  calendarRef.current?.getApi()?.today();
+                  setSelectedDate(todayISO());
+                },
+              },
+            }}
+            events={fcEvents}
+            editable
+            datesSet={(arg) => {
+              // Day/Week views default to scrolling to 6am so there's no need
+              // to scroll past empty early-morning hours - but if something's
+              // scheduled earlier than that, scroll to the earliest event
+              // instead so it's visible without scrolling either.
+              if (!arg.view.type.startsWith("timeGrid")) return;
+              const rangeStart = ymd(arg.start.getFullYear(), arg.start.getMonth(), arg.start.getDate());
+              const rangeEnd = ymd(arg.end.getFullYear(), arg.end.getMonth(), arg.end.getDate());
+              let earliestMinutes = 6 * 60;
+              for (const e of events) {
+                if (!e.start_time || e.start_date < rangeStart || e.start_date >= rangeEnd) continue;
+                earliestMinutes = Math.min(earliestMinutes, timeToMinutes(e.start_time));
+              }
+              const hh = Math.floor(earliestMinutes / 60);
+              const mm = earliestMinutes % 60;
+              calendarRef.current?.getApi()?.scrollToTime(`${pad2(hh)}:${pad2(mm)}:00`);
+            }}
+            dateClick={(info) => setSelectedDate(info.dateStr.slice(0, 10))}
+            eventClick={(info) => {
+              if (!info.event.extendedProps.isHoliday) setEditingEventId(info.event.id);
+            }}
+            eventDrop={(info) => {
+              const startParts = dateTimeParts(info.event.start);
+              const changes = { start_date: startParts.date };
+              if (info.event.allDay) {
+                changes.start_time = null;
+                changes.end_time = null;
+              } else {
+                changes.start_time = startParts.time;
+                changes.end_time = info.event.end ? dateTimeParts(info.event.end).time : null;
+              }
+              updateEvent(info.event.id, changes);
+            }}
+            eventResize={(info) => {
+              if (!info.event.end) return;
+              updateEvent(info.event.id, { end_time: dateTimeParts(info.event.end).time });
+            }}
+            dayCellDidMount={(arg) => {
+              // Inserted imperatively (not via dayCellContent) because that hook
+              // only replaces content *inside* FullCalendar's day-number badge —
+              // a full-width flex row placed there fights the badge's own sizing
+              // and overlaps the number. Flexing the day-top container itself and
+              // inserting a sibling label keeps the badge's own layout intact.
+              const dateStr = ymd(arg.date.getFullYear(), arg.date.getMonth(), arg.date.getDate());
+              const holidayName = holidayByDate[dateStr];
+              if (!holidayName) return;
 
-          arg.el.style.backgroundColor = "rgba(160, 64, 0, 0.12)";
+              arg.el.style.backgroundColor = "rgba(160, 64, 0, 0.12)";
 
-          const top = arg.el.querySelector(".fc-daygrid-day-top");
-          if (top && !top.querySelector(".holiday-label")) {
-            top.style.display = "flex";
-            top.style.alignItems = "center";
-            const label = document.createElement("span");
-            label.className = "holiday-label";
-            label.textContent = holidayName;
-            label.style.cssText =
-              "font-size:10px;font-weight:600;color:#A04000;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:4px;";
-            top.insertBefore(label, top.firstChild);
-          }
-        }}
-      />
-      </div>
-
-      {selectedDate && (
-        <div className="mt-4 bg-stone-parchment rounded-lg border p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <p className="font-medium">{selectedDate}</p>
-              {holidayByDate[selectedDate] && (
-                <p className="text-xs text-amber-rust font-medium">{holidayByDate[selectedDate]}</p>
-              )}
-            </div>
-            <button
-              onClick={() => {
-                setSelectedDate(null);
-                setEditingEventId(null);
-              }}
-              className="text-stone-grey hover:text-bark-umber"
-            >
-              ✕
-            </button>
-          </div>
-          {(() => {
-            const dayEvents = events.filter((e) => e.start_date === selectedDate);
-            if (dayEvents.length === 0) {
-              return <p className="text-sm text-stone-taupe">No events on this day.</p>;
-            }
-            return (
-              <ul className="space-y-2">
-                {dayEvents.map((e) => (
-                  <EditableEventRow
-                    key={e.id}
-                    event={e}
-                    isEditing={editingEventId === e.id}
-                    onStartEdit={() => setEditingEventId(e.id)}
-                    onStopEdit={() => setEditingEventId(null)}
-                    onUpdate={updateEvent}
-                    currentUserId={currentUserId}
-                    guests={guests}
-                    onAddGuest={addGuest}
-                    onRemoveGuest={removeGuest}
-                  />
-                ))}
-              </ul>
-            );
-          })()}
+              const top = arg.el.querySelector(".fc-daygrid-day-top");
+              if (top && !top.querySelector(".holiday-label")) {
+                top.style.display = "flex";
+                top.style.alignItems = "center";
+                const label = document.createElement("span");
+                label.className = "holiday-label";
+                label.textContent = holidayName;
+                label.style.cssText =
+                  "font-size:10px;font-weight:600;color:#A04000;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:4px;";
+                top.insertBefore(label, top.firstChild);
+              }
+            }}
+          />
         </div>
-      )}
+
+        {selectedDate && (
+          <div className="mt-4 bg-stone-parchment rounded-lg border p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <p className="font-medium">{selectedDate}</p>
+                {holidayByDate[selectedDate] && (
+                  <p className="text-xs text-amber-rust font-medium">{holidayByDate[selectedDate]}</p>
+                )}
+              </div>
+              <button onClick={() => setSelectedDate(null)} className="text-stone-grey hover:text-bark-umber">
+                ✕
+              </button>
+            </div>
+            {(() => {
+              const dayEvents = events.filter((e) => e.start_date === selectedDate);
+              if (dayEvents.length === 0) {
+                return <p className="text-sm text-stone-taupe">No events on this day.</p>;
+              }
+              return (
+                <ul className="space-y-2">
+                  {dayEvents.map((e) => (
+                    <EventRow key={e.id} event={e} onOpen={(ev) => setEditingEventId(ev.id)} currentUserId={currentUserId} />
+                  ))}
+                </ul>
+              );
+            })()}
+          </div>
+        )}
       </div>
+
+      {editingEvent && (
+        <EventEditModal
+          event={editingEvent}
+          onClose={() => setEditingEventId(null)}
+          onUpdate={updateEvent}
+          guests={guests}
+          onAddGuest={addGuest}
+          onRemoveGuest={removeGuest}
+        />
+      )}
     </div>
   );
 }
