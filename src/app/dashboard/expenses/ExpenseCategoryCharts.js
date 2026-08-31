@@ -126,7 +126,7 @@ function DropdownItem({ active, onClick, children }) {
 }
 
 export default function ExpenseCategoryCharts({ expenses: initialExpenses, categories, workspaces, savingsParentId, initialCustomSavings }) {
-  const { expenses, byId, categoryOptions, updateExpense, updateCategory } = useExpenseEditor(
+  const { expenses, byId, categoryOptions, updateExpense, updateCategory, deleteExpense } = useExpenseEditor(
     initialExpenses,
     categories
   );
@@ -214,6 +214,7 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
                 <th className="p-2 font-medium">Category</th>
                 <th className="p-2 font-medium">Date</th>
                 <th className="p-2 font-medium">Amount</th>
+                <th className="p-2 font-medium w-8"></th>
               </tr>
             </thead>
             <tbody>
@@ -223,6 +224,7 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
                   return (
                     <tr key={`empty-${i}`} className={i % 2 === 0 ? "bg-stone-linen" : "bg-stone-parchment"}>
                       <td className="p-2">&nbsp;</td>
+                      <td className="p-2"></td>
                       <td className="p-2"></td>
                       <td className="p-2"></td>
                       <td className="p-2"></td>
@@ -237,6 +239,7 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
                     byId={byId}
                     onUpdate={updateExpense}
                     onUpdateCategory={updateCategory}
+                    onDelete={deleteExpense}
                     rowClassName={i % 2 === 0 ? "bg-stone-linen" : "bg-stone-parchment"}
                   />
                 );

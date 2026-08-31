@@ -1,12 +1,27 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import interactionPlugin from "@fullcalendar/interaction";
+import { createClient } from "@/lib/supabase/client";
 import { workspaceLabel, creatorLabel } from "@/lib/displayNames";
+
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+
+function ymd(year, month0, day) {
+  return `${year}-${pad2(month0 + 1)}-${pad2(day)}`;
+}
+
+function todayISO() {
+  const now = new Date();
+  return ymd(now.getFullYear(), now.getMonth(), now.getDate());
+}
 
 function toFullCalendarEvent(row) {
   const allDay = !row.start_time;
@@ -23,23 +38,166 @@ function toFullCalendarEvent(row) {
   };
 }
 
-function toHolidayEvent(holiday, index) {
-  return {
-    id: `holiday-${index}`,
-    title: holiday.name,
-    start: holiday.date,
-    allDay: true,
-    display: "list-item",
-    color: "#A04000", // amber.rust
-    extendedProps: { isHoliday: true },
-  };
+function GuestList({ eventId, guests, onAdd, onRemove }) {
+  const [email, setEmail] = useState("");
+  const eventGuests = guests.filter((g) => g.event_id === eventId);
+
+  return (
+    <div className="mt-2 pt-2 border-t space-y-1">
+      <p className="text-xs font-medium text-bark-umber">Guests</p>
+      {eventGuests.length === 0 ? (
+        <p className="text-xs text-stone-taupe">No guests invited yet.</p>
+      ) : (
+        <ul className="space-y-1">
+          {eventGuests.map((g) => (
+            <li key={g.id} className="flex items-center justify-between text-xs">
+              <span>
+                {g.email} <span className="text-stone-taupe">({g.status})</span>
+              </span>
+              <button onClick={() => onRemove(g.id)} className="text-stone-grey hover:text-amber-rust">
+                ✕
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <form
+        onSubmit={(ev) => {
+          ev.preventDefault();
+          if (!email.trim()) return;
+          onAdd(eventId, email.trim());
+          setEmail("");
+        }}
+        className="flex gap-1 mt-1"
+      >
+        <input
+          type="email"
+          required
+          value={email}
+          onChange={(ev) => setEmail(ev.target.value)}
+          placeholder="Invite by email"
+          className="flex-1 min-w-0 border rounded px-2 py-1 text-xs"
+        />
+        <button type="submit" className="text-xs bg-forest-hunter text-stone-parchment px-2 py-1 rounded shrink-0">
+          Invite
+        </button>
+      </form>
+      <p className="text-[10px] text-stone-taupe">
+        Guests are tracked here, but invite emails aren&apos;t sent automatically yet.
+      </p>
+    </div>
+  );
 }
 
-export default function CalendarView({ events, holidays = [], currentUserId }) {
+function EditableEventRow({ event: e, isEditing, onStartEdit, onStopEdit, onUpdate, currentUserId, guests, onAddGuest, onRemoveGuest }) {
+  if (!isEditing) {
+    return (
+      <li>
+        <button
+          onClick={onStartEdit}
+          className="w-full text-left flex items-center justify-between gap-4 hover:bg-stone-linen rounded px-1 py-0.5"
+        >
+          <span>{e.title}</span>
+          <span className="text-sm text-stone-taupe whitespace-nowrap">
+            {e.start_time ? e.start_time.slice(0, 5) : "All day"}
+            {e.location ? ` · ${e.location}` : ""}
+            {" · "}
+            {workspaceLabel(e.workspaces)}
+            {creatorLabel(e, currentUserId) && ` · Added by ${creatorLabel(e, currentUserId)}`}
+          </span>
+        </button>
+      </li>
+    );
+  }
+
+  return (
+    <li className="bg-stone-linen rounded-md p-3 space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <input
+          type="text"
+          defaultValue={e.title}
+          onBlur={(ev) => ev.target.value !== e.title && onUpdate(e.id, { title: ev.target.value })}
+          className="font-medium bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-1 flex-1 min-w-0"
+        />
+        <button onClick={onStopEdit} className="text-sm text-forest-hunter hover:underline shrink-0">
+          Done
+        </button>
+      </div>
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <input
+          type="date"
+          defaultValue={e.start_date}
+          onChange={(ev) => ev.target.value && onUpdate(e.id, { start_date: ev.target.value })}
+          className="border rounded px-2 py-1"
+        />
+        <input
+          type="time"
+          defaultValue={e.start_time ? e.start_time.slice(0, 5) : ""}
+          onChange={(ev) => onUpdate(e.id, { start_time: ev.target.value || null })}
+          className="border rounded px-2 py-1"
+        />
+        <span className="text-stone-taupe">to</span>
+        <input
+          type="time"
+          defaultValue={e.end_time ? e.end_time.slice(0, 5) : ""}
+          onChange={(ev) => onUpdate(e.id, { end_time: ev.target.value || null })}
+          className="border rounded px-2 py-1"
+        />
+      </div>
+      <input
+        type="text"
+        defaultValue={e.location || ""}
+        placeholder="Location"
+        onBlur={(ev) => ev.target.value !== (e.location || "") && onUpdate(e.id, { location: ev.target.value || null })}
+        className="w-full border rounded px-2 py-1 text-sm"
+      />
+      <GuestList eventId={e.id} guests={guests} onAdd={onAddGuest} onRemove={onRemoveGuest} />
+    </li>
+  );
+}
+
+export default function CalendarView({ events: initialEvents, holidays = [], currentUserId, initialGuests = [] }) {
+  const router = useRouter();
+  const supabase = createClient();
+  const [events, setEvents] = useState(initialEvents);
+  useEffect(() => setEvents(initialEvents), [initialEvents]);
+  const [guests, setGuests] = useState(initialGuests);
+  useEffect(() => setGuests(initialGuests), [initialGuests]);
+
   const [selectedDate, setSelectedDate] = useState(null);
+  const [editingEventId, setEditingEventId] = useState(null);
   const calendarRef = useRef(null);
   const containerRef = useRef(null);
-  const fcEvents = [...events.map(toFullCalendarEvent), ...holidays.map(toHolidayEvent)];
+
+  const holidayByDate = useMemo(() => {
+    const map = {};
+    for (const h of holidays) map[h.date] = h.name;
+    return map;
+  }, [holidays]);
+
+  const fcEvents = events.map(toFullCalendarEvent);
+
+  async function updateEvent(id, changes) {
+    setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, ...changes } : e)));
+    const { error } = await supabase.from("calendar_events").update(changes).eq("id", id);
+    if (error) console.error("Failed to update event:", error.message);
+    router.refresh();
+  }
+
+  async function addGuest(eventId, email) {
+    const { data, error } = await supabase.from("event_guests").insert({ event_id: eventId, email }).select().single();
+    if (error) {
+      console.error("Failed to add guest:", error.message);
+      return;
+    }
+    setGuests((prev) => [...prev, data]);
+  }
+
+  async function removeGuest(guestId) {
+    setGuests((prev) => prev.filter((g) => g.id !== guestId));
+    const { error } = await supabase.from("event_guests").delete().eq("id", guestId);
+    if (error) console.error("Failed to remove guest:", error.message);
+  }
 
   useEffect(() => {
     // FullCalendar can measure a zero/incorrect container width on the very
@@ -64,7 +222,7 @@ export default function CalendarView({ events, holidays = [], currentUserId }) {
         initialView="dayGridMonth"
         firstDay={1}
         headerToolbar={{
-          left: "prev,next today",
+          left: "prev,next gotoToday",
           center: "title",
           right: "multiMonthYear,dayGridMonth,timeGridWeek,timeGridDay",
         }}
@@ -73,13 +231,46 @@ export default function CalendarView({ events, holidays = [], currentUserId }) {
           dayGridMonth: "Month",
           timeGridWeek: "Week",
           timeGridDay: "Day",
-          today: "Today",
+        }}
+        customButtons={{
+          // Named "gotoToday" rather than the reserved "today" — FullCalendar
+          // auto-disables a button named "today" whenever the current view
+          // already contains today's date (the common case), which silently
+          // swallows clicks exactly when someone would want to use it.
+          gotoToday: {
+            text: "Today",
+            click: () => {
+              calendarRef.current?.getApi()?.today();
+              setSelectedDate(todayISO());
+            },
+          },
         }}
         events={fcEvents}
         dateClick={(info) => setSelectedDate(info.dateStr.slice(0, 10))}
-        eventClick={(info) => {
-          if (info.event.extendedProps.isHoliday) return;
-          setSelectedDate(info.event.startStr.slice(0, 10));
+        eventClick={(info) => setSelectedDate(info.event.startStr.slice(0, 10))}
+        dayCellDidMount={(arg) => {
+          // Inserted imperatively (not via dayCellContent) because that hook
+          // only replaces content *inside* FullCalendar's day-number badge —
+          // a full-width flex row placed there fights the badge's own sizing
+          // and overlaps the number. Flexing the day-top container itself and
+          // inserting a sibling label keeps the badge's own layout intact.
+          const dateStr = ymd(arg.date.getFullYear(), arg.date.getMonth(), arg.date.getDate());
+          const holidayName = holidayByDate[dateStr];
+          if (!holidayName) return;
+
+          arg.el.style.backgroundColor = "rgba(160, 64, 0, 0.12)";
+
+          const top = arg.el.querySelector(".fc-daygrid-day-top");
+          if (top && !top.querySelector(".holiday-label")) {
+            top.style.display = "flex";
+            top.style.alignItems = "center";
+            const label = document.createElement("span");
+            label.className = "holiday-label";
+            label.textContent = holidayName;
+            label.style.cssText =
+              "font-size:10px;font-weight:600;color:#A04000;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:4px;";
+            top.insertBefore(label, top.firstChild);
+          }
         }}
         height="auto"
       />
@@ -87,8 +278,19 @@ export default function CalendarView({ events, holidays = [], currentUserId }) {
       {selectedDate && (
         <div className="mt-4 bg-stone-parchment rounded-lg border p-4">
           <div className="flex items-center justify-between mb-2">
-            <p className="font-medium">{selectedDate}</p>
-            <button onClick={() => setSelectedDate(null)} className="text-stone-grey hover:text-bark-umber">
+            <div>
+              <p className="font-medium">{selectedDate}</p>
+              {holidayByDate[selectedDate] && (
+                <p className="text-xs text-amber-rust font-medium">{holidayByDate[selectedDate]}</p>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                setSelectedDate(null);
+                setEditingEventId(null);
+              }}
+              className="text-stone-grey hover:text-bark-umber"
+            >
               ✕
             </button>
           </div>
@@ -100,16 +302,18 @@ export default function CalendarView({ events, holidays = [], currentUserId }) {
             return (
               <ul className="space-y-2">
                 {dayEvents.map((e) => (
-                  <li key={e.id} className="flex items-center justify-between gap-4">
-                    <span>{e.title}</span>
-                    <span className="text-sm text-stone-taupe whitespace-nowrap">
-                      {e.start_time ? e.start_time.slice(0, 5) : "All day"}
-                      {e.location ? ` · ${e.location}` : ""}
-                      {" · "}
-                      {workspaceLabel(e.workspaces)}
-                      {creatorLabel(e, currentUserId) && ` · Added by ${creatorLabel(e, currentUserId)}`}
-                    </span>
-                  </li>
+                  <EditableEventRow
+                    key={e.id}
+                    event={e}
+                    isEditing={editingEventId === e.id}
+                    onStartEdit={() => setEditingEventId(e.id)}
+                    onStopEdit={() => setEditingEventId(null)}
+                    onUpdate={updateEvent}
+                    currentUserId={currentUserId}
+                    guests={guests}
+                    onAddGuest={addGuest}
+                    onRemoveGuest={removeGuest}
+                  />
                 ))}
               </ul>
             );

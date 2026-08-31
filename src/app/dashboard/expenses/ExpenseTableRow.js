@@ -2,7 +2,7 @@
 
 import { isIncomeCategory, categoryPathLabel } from "@/lib/categories";
 
-export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onUpdate, onUpdateCategory, rowClassName }) {
+export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onUpdate, onUpdateCategory, onDelete, rowClassName }) {
   const currentLabel = e.category_id ? categoryPathLabel(byId, e.category_id) : e.category || "Uncategorized";
 
   return (
@@ -61,6 +61,17 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
           />
           <span className="text-stone-taupe text-xs">{e.currency || "USD"}</span>
         </div>
+      </td>
+      <td className="p-1 text-center">
+        <button
+          onClick={() => {
+            if (window.confirm(`Delete "${e.description || "this expense"}"? This can't be undone.`)) onDelete(e.id);
+          }}
+          title="Delete expense"
+          className="text-stone-grey hover:text-amber-rust"
+        >
+          🗑
+        </button>
       </td>
     </tr>
   );

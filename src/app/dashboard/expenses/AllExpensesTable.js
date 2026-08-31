@@ -21,7 +21,7 @@ function pageNumbers(current, total) {
 }
 
 export default function AllExpensesTable({ expenses: initialExpenses, categories }) {
-  const { expenses, byId, categoryOptions, updateExpense, updateCategory } = useExpenseEditor(
+  const { expenses, byId, categoryOptions, updateExpense, updateCategory, deleteExpense } = useExpenseEditor(
     initialExpenses,
     categories
   );
@@ -48,12 +48,13 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
               <th className="p-2 font-medium">Category</th>
               <th className="p-2 font-medium">Date</th>
               <th className="p-2 font-medium">Amount</th>
+              <th className="p-2 font-medium w-8"></th>
             </tr>
           </thead>
           <tbody>
             {pageRows.length === 0 ? (
               <tr>
-                <td colSpan={4} className="p-4 text-center text-stone-taupe">
+                <td colSpan={5} className="p-4 text-center text-stone-taupe">
                   No expenses yet — send one to your bot on Telegram.
                 </td>
               </tr>
@@ -66,6 +67,7 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
                   byId={byId}
                   onUpdate={updateExpense}
                   onUpdateCategory={updateCategory}
+                  onDelete={deleteExpense}
                   rowClassName={i % 2 === 0 ? "bg-stone-linen" : "bg-stone-parchment"}
                 />
               ))

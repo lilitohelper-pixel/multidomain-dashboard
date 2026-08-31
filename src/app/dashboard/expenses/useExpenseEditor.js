@@ -35,5 +35,16 @@ export function useExpenseEditor(initialExpenses, categories) {
     updateExpense(id, { category_id: categoryId, category: categoryPathLabel(byId, categoryId) });
   }
 
-  return { expenses, byId, categoryOptions, updateExpense, updateCategory };
+  async function deleteExpense(id) {
+    const previous = expenses;
+    setExpenses((prev) => prev.filter((e) => e.id !== id));
+    const { error } = await supabase.from("expenses").delete().eq("id", id);
+    if (error) {
+      console.error("Failed to delete expense:", error.message);
+      setExpenses(previous);
+    }
+    router.refresh();
+  }
+
+  return { expenses, byId, categoryOptions, updateExpense, updateCategory, deleteExpense };
 }

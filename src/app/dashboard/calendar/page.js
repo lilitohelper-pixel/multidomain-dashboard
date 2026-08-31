@@ -17,15 +17,25 @@ export default async function CalendarPage() {
     supabase.from("users").select("timezone").eq("id", user.id).single(),
   ]);
 
+  const eventIds = (events || []).map((e) => e.id);
+  const { data: guests } = eventIds.length
+    ? await supabase.from("event_guests").select("*").in("event_id", eventIds)
+    : { data: [] };
+
   const currentYear = new Date().getFullYear();
   const holidays = profile?.timezone
     ? getHolidaysForTimezone(profile.timezone, [currentYear, currentYear + 1])
     : [];
 
   return (
-    <div>
+    <div className="max-w-4xl">
       <h1 className="text-2xl font-semibold mb-6">Calendar</h1>
-      <CalendarView events={events || []} holidays={holidays} currentUserId={user.id} />
+      <CalendarView
+        events={events || []}
+        holidays={holidays}
+        currentUserId={user.id}
+        initialGuests={guests || []}
+      />
     </div>
   );
 }
