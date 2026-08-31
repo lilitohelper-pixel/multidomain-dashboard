@@ -16,7 +16,7 @@ export default async function DashboardLayout({ children }) {
   return (
     <div className="min-h-screen bg-stone-slate">
       <header className="bg-stone-parchment border-b">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="px-6 py-4 flex items-center justify-between">
           <nav className="flex gap-6 text-sm font-medium">
             <Link href="/dashboard" className="hover:text-forest-hunter">
               Today
@@ -37,7 +37,7 @@ export default async function DashboardLayout({ children }) {
           </div>
         </div>
       </header>
-      <main className="max-w-5xl mx-auto px-4 py-8">{children}</main>
+      <main className="px-6 py-8">{children}</main>
     </div>
   );
 }
