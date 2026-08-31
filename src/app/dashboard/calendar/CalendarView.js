@@ -29,6 +29,16 @@ function tomorrowISO() {
   return ymd(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
+// FullCalendar's event.start/end for our events are "naive" local datetimes
+// (we never give it a UTC 'Z' suffix), so getHours()/getMinutes() etc. read
+// back the same wall-clock value we put in — no timezone conversion involved.
+function dateTimeParts(date) {
+  return {
+    date: ymd(date.getFullYear(), date.getMonth(), date.getDate()),
+    time: `${pad2(date.getHours())}:${pad2(date.getMinutes())}:00`,
+  };
+}
+
 function toFullCalendarEvent(row) {
   const allDay = !row.start_time;
   const start = allDay ? row.start_date : `${row.start_date}T${row.start_time}`;
@@ -301,8 +311,25 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
           },
         }}
         events={fcEvents}
+        editable
         dateClick={(info) => setSelectedDate(info.dateStr.slice(0, 10))}
         eventClick={(info) => setSelectedDate(info.event.startStr.slice(0, 10))}
+        eventDrop={(info) => {
+          const startParts = dateTimeParts(info.event.start);
+          const changes = { start_date: startParts.date };
+          if (info.event.allDay) {
+            changes.start_time = null;
+            changes.end_time = null;
+          } else {
+            changes.start_time = startParts.time;
+            changes.end_time = info.event.end ? dateTimeParts(info.event.end).time : null;
+          }
+          updateEvent(info.event.id, changes);
+        }}
+        eventResize={(info) => {
+          if (!info.event.end) return;
+          updateEvent(info.event.id, { end_time: dateTimeParts(info.event.end).time });
+        }}
         dayCellDidMount={(arg) => {
           // Inserted imperatively (not via dayCellContent) because that hook
           // only replaces content *inside* FullCalendar's day-number badge —
