@@ -1,6 +1,6 @@
 "use client";
 
-import { isIncomeCategory, categoryPathLabel } from "@/lib/categories";
+import { isIncomeCategory, categoryPathLabel, formatAmount } from "@/lib/categories";
 
 export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onUpdate, onUpdateCategory, onDelete, rowClassName }) {
   const currentLabel = e.category_id ? categoryPathLabel(byId, e.category_id) : e.category || "Uncategorized";
@@ -17,12 +17,12 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
           className="w-full min-w-[7rem] bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-1"
         />
       </td>
-      <td className="p-1">
+      <td className="p-1 w-64">
         <select
           value={e.category_id || ""}
           onChange={(ev) => onUpdateCategory(e.id, ev.target.value)}
           title={currentLabel}
-          className="w-full max-w-[11rem] truncate bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-1 text-sm"
+          className="w-full max-w-[15.4rem] truncate bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-1 text-sm"
         >
           {!e.category_id && <option value="">{e.category || "Uncategorized"}</option>}
           {categoryOptions.map((opt) => (
@@ -50,12 +50,14 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
             {isIncomeCategory(byId, e.category_id) ? "+" : "-"}
           </span>
           <input
-            type="number"
-            step="0.01"
-            defaultValue={e.amount ?? ""}
+            type="text"
+            inputMode="decimal"
+            defaultValue={e.amount != null ? formatAmount(e.amount) : ""}
             onBlur={(ev) => {
-              const v = ev.target.value === "" ? null : Number(ev.target.value);
-              if (v !== e.amount) onUpdate(e.id, { amount: v });
+              const cleaned = ev.target.value.replace(/\s/g, "").replace(",", ".");
+              const v = cleaned === "" ? null : Number(cleaned);
+              if (!Number.isNaN(v) && v !== e.amount) onUpdate(e.id, { amount: v });
+              ev.target.value = v != null && !Number.isNaN(v) ? formatAmount(v) : "";
             }}
             className="w-full min-w-0 bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-1"
           />
