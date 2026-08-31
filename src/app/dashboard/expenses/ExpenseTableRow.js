@@ -42,7 +42,11 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
       </td>
       <td className="p-1">
         <div className="flex items-center gap-1">
-          <span className={isIncomeCategory(byId, e.category_id) ? "text-forest-hunter" : "text-amber-rust"}>
+          <span
+            className={`w-3 shrink-0 text-center ${
+              isIncomeCategory(byId, e.category_id) ? "text-forest-hunter" : "text-amber-rust"
+            }`}
+          >
             {isIncomeCategory(byId, e.category_id) ? "+" : "-"}
           </span>
           <input
