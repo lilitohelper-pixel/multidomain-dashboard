@@ -526,7 +526,11 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
                 clearTimeout(dateClickTimerRef.current);
                 dateClickTimerRef.current = null;
                 const parts = dateTimeParts(info.date);
-                setDraftEvent({ start_date: parts.date, start_time: info.allDay ? null : parts.time });
+                // Double-clicking a month-view day cell reports allDay=true
+                // since it has no time component, but that shouldn't make
+                // the new-event popup default to an all-day event — give it
+                // a normal starting time instead, same as a timed click.
+                setDraftEvent({ start_date: parts.date, start_time: info.allDay ? "09:00:00" : parts.time });
                 return;
               }
               dateClickTimerRef.current = setTimeout(() => {
