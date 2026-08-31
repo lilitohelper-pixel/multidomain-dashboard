@@ -23,6 +23,12 @@ function todayISO() {
   return ymd(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
+function tomorrowISO() {
+  const now = new Date();
+  now.setDate(now.getDate() + 1);
+  return ymd(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
 function toFullCalendarEvent(row) {
   const allDay = !row.start_time;
   const start = allDay ? row.start_date : `${row.start_date}T${row.start_time}`;
@@ -36,6 +42,38 @@ function toFullCalendarEvent(row) {
     allDay,
     extendedProps: { location: row.location },
   };
+}
+
+function DayCard({ label, dateISO, dayEvents, variant, onSelectDate }) {
+  const isToday = variant === "today";
+  return (
+    <div
+      className={`rounded-2xl border p-4 space-y-3 ${
+        isToday ? "bg-moss-sage text-stone-parchment border-moss-sage" : "bg-stone-parchment text-bark-walnut border-bark-walnut"
+      }`}
+    >
+      <h3 className="text-lg font-semibold">{label}</h3>
+      {dayEvents.length === 0 ? (
+        <p className={`text-sm ${isToday ? "text-stone-parchment/80" : "text-stone-taupe"}`}>No events.</p>
+      ) : (
+        <ul className="space-y-2">
+          {dayEvents.map((e) => (
+            <li key={e.id}>
+              <button
+                onClick={() => onSelectDate(dateISO)}
+                className={`w-full flex items-center justify-between gap-3 text-left rounded px-1 -mx-1 ${
+                  isToday ? "hover:bg-white/10" : "hover:bg-stone-linen"
+                }`}
+              >
+                <span className="truncate">{e.title}</span>
+                <span className="whitespace-nowrap font-medium">{e.start_time ? e.start_time.slice(0, 5) : "All day"}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 function GuestList({ eventId, guests, onAdd, onRemove }) {
@@ -177,6 +215,11 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
 
   const fcEvents = events.map(toFullCalendarEvent);
 
+  const todayDate = todayISO();
+  const tomorrowDate = tomorrowISO();
+  const todayEvents = useMemo(() => events.filter((e) => e.start_date === todayDate), [events, todayDate]);
+  const tomorrowEvents = useMemo(() => events.filter((e) => e.start_date === tomorrowDate), [events, tomorrowDate]);
+
   async function updateEvent(id, changes) {
     setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, ...changes } : e)));
     const { error } = await supabase.from("calendar_events").update(changes).eq("id", id);
@@ -215,7 +258,19 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
   }, []);
 
   return (
-    <div ref={containerRef}>
+    <div className="grid md:grid-cols-[260px_1fr] gap-6 items-start">
+      <div className="space-y-4">
+        <DayCard label="Today" dateISO={todayDate} dayEvents={todayEvents} variant="today" onSelectDate={setSelectedDate} />
+        <DayCard
+          label="Tomorrow"
+          dateISO={tomorrowDate}
+          dayEvents={tomorrowEvents}
+          variant="tomorrow"
+          onSelectDate={setSelectedDate}
+        />
+      </div>
+
+      <div ref={containerRef}>
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin]}
@@ -320,6 +375,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
           })()}
         </div>
       )}
+      </div>
     </div>
   );
 }
