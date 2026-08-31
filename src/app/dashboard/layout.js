@@ -31,6 +31,9 @@ export default async function DashboardLayout({ children }) {
             <Link href="/dashboard/calendar" className="text-[var(--nav-text)] hover:text-[var(--nav-muted)]">
               Calendar
             </Link>
+            <Link href="/dashboard/connect-telegram" className="text-[var(--nav-text)] hover:text-[var(--nav-muted)]">
+              Telegram
+            </Link>
           </nav>
           <div className="flex items-center gap-4 text-sm text-[var(--nav-muted)]">
             <ThemeSwitcher inline />

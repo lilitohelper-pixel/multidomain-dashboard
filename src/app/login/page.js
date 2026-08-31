@@ -1,11 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const [mode, setMode] = useState("signin");
@@ -14,13 +23,23 @@ export default function LoginPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (searchParams.get("error") === "confirmation_failed") {
+      setMessage("That confirmation link is invalid or expired — please sign up again.");
+    }
+  }, [searchParams]);
+
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
     if (mode === "signup") {
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/dashboard/connect-telegram` },
+      });
       if (error) {
         setMessage(error.message);
       } else {
