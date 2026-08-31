@@ -8,7 +8,6 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import interactionPlugin from "@fullcalendar/interaction";
 import { createClient } from "@/lib/supabase/client";
-import { workspaceLabel, creatorLabel } from "@/lib/displayNames";
 
 function pad2(n) {
   return String(n).padStart(2, "0");
@@ -142,26 +141,6 @@ function GuestList({ eventId, guests, onAdd, onRemove }) {
   );
 }
 
-function EventRow({ event: e, onOpen, currentUserId }) {
-  return (
-    <li>
-      <button
-        onClick={() => onOpen(e)}
-        className="w-full text-left flex items-center justify-between gap-4 hover:bg-stone-linen rounded px-1 py-0.5"
-      >
-        <span>{e.title}</span>
-        <span className="text-sm text-stone-taupe whitespace-nowrap">
-          {e.start_time ? e.start_time.slice(0, 5) : "All day"}
-          {e.location ? ` · ${e.location}` : ""}
-          {" · "}
-          {workspaceLabel(e.workspaces)}
-          {creatorLabel(e, currentUserId) && ` · Added by ${creatorLabel(e, currentUserId)}`}
-        </span>
-      </button>
-    </li>
-  );
-}
-
 function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRemoveGuest }) {
   return (
     <div className="fixed inset-0 bg-bark-walnut/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
@@ -222,7 +201,6 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
   const [guests, setGuests] = useState(initialGuests);
   useEffect(() => setGuests(initialGuests), [initialGuests]);
 
-  const [selectedDate, setSelectedDate] = useState(null);
   const [editingEventId, setEditingEventId] = useState(null);
   const calendarRef = useRef(null);
   const containerRef = useRef(null);
@@ -279,7 +257,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
   }, []);
 
   return (
-    <div className="grid md:grid-cols-[220px_1fr] gap-6 items-start">
+    <div className="grid md:grid-cols-[440px_1fr] gap-6 items-start">
       <div className="space-y-4">
         <DayCard label="Today" dayEvents={todayEvents} variant="today" onSelectEvent={(e) => setEditingEventId(e.id)} />
         <DayCard
@@ -298,7 +276,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
             initialView="dayGridMonth"
             firstDay={1}
             headerToolbar={{
-              left: "prev,next gotoToday",
+              left: "prev,next",
               center: "title",
               right: "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear",
             }}
@@ -310,21 +288,8 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
             }}
             height={720}
             expandRows
-            dayMaxEventRows={3}
+            dayMaxEventRows={2}
             eventTimeFormat={{ hour: "numeric", minute: "2-digit", omitZeroMinute: true, meridiem: "short" }}
-            customButtons={{
-              // Named "gotoToday" rather than the reserved "today" — FullCalendar
-              // auto-disables a button named "today" whenever the current view
-              // already contains today's date (the common case), which silently
-              // swallows clicks exactly when someone would want to use it.
-              gotoToday: {
-                text: "Today",
-                click: () => {
-                  calendarRef.current?.getApi()?.today();
-                  setSelectedDate(todayISO());
-                },
-              },
-            }}
             events={fcEvents}
             editable
             datesSet={(arg) => {
@@ -344,7 +309,6 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
               const mm = earliestMinutes % 60;
               calendarRef.current?.getApi()?.scrollToTime(`${pad2(hh)}:${pad2(mm)}:00`);
             }}
-            dateClick={(info) => setSelectedDate(info.dateStr.slice(0, 10))}
             eventClick={(info) => {
               if (!info.event.extendedProps.isHoliday) setEditingEventId(info.event.id);
             }}
@@ -365,6 +329,15 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
               updateEvent(info.event.id, { end_time: dateTimeParts(info.event.end).time });
             }}
             dayCellDidMount={(arg) => {
+              // expandRows only stretches shorter rows up to match the
+              // tallest one — it can't shrink a row back down when one day
+              // in it needs more lines than the rest (e.g. 3 events vs 0-1
+              // elsewhere). Reserving the same event-area height in every
+              // cell up front, regardless of content, means every row's
+              // *natural* height is already equal before expandRows runs.
+              const eventsContainer = arg.el.querySelector(".fc-daygrid-day-events");
+              if (eventsContainer) eventsContainer.style.minHeight = "44px";
+
               // Inserted imperatively (not via dayCellContent) because that hook
               // only replaces content *inside* FullCalendar's day-number badge —
               // a full-width flex row placed there fights the badge's own sizing
@@ -380,6 +353,20 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
               if (top && !top.querySelector(".holiday-label")) {
                 top.style.display = "flex";
                 top.style.alignItems = "center";
+                // .fc-daygrid-day-top defaults to a fit-content width (it
+                // normally wraps only the small day-number badge), so it
+                // must be forced to span the full cell before space-between
+                // has any extra room to distribute — otherwise the label and
+                // number just sit bunched together wherever the box happens
+                // to be, with real empty cell space outside the flex box.
+                top.style.width = "100%";
+                top.style.justifyContent = "space-between";
+                // FullCalendar's own stylesheet sets flex-direction:
+                // row-reverse on this element (its own trick for
+                // right-aligning the day number normally) — left as-is, our
+                // DOM order (label, then number) would render reversed,
+                // putting the number on the left instead.
+                top.style.flexDirection = "row";
                 const label = document.createElement("span");
                 label.className = "holiday-label";
                 label.textContent = holidayName;
@@ -390,35 +377,6 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
             }}
           />
         </div>
-
-        {selectedDate && (
-          <div className="mt-4 bg-stone-parchment rounded-lg border p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <p className="font-medium">{selectedDate}</p>
-                {holidayByDate[selectedDate] && (
-                  <p className="text-xs text-amber-rust font-medium">{holidayByDate[selectedDate]}</p>
-                )}
-              </div>
-              <button onClick={() => setSelectedDate(null)} className="text-stone-grey hover:text-bark-umber">
-                ✕
-              </button>
-            </div>
-            {(() => {
-              const dayEvents = events.filter((e) => e.start_date === selectedDate);
-              if (dayEvents.length === 0) {
-                return <p className="text-sm text-stone-taupe">No events on this day.</p>;
-              }
-              return (
-                <ul className="space-y-2">
-                  {dayEvents.map((e) => (
-                    <EventRow key={e.id} event={e} onOpen={(ev) => setEditingEventId(ev.id)} currentUserId={currentUserId} />
-                  ))}
-                </ul>
-              );
-            })()}
-          </div>
-        )}
       </div>
 
       {editingEvent && (
