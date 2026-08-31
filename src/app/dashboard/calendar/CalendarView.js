@@ -27,10 +27,26 @@ function todayISO() {
   return ymd(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
-function tomorrowISO() {
+function parseYMD(iso) {
+  const [year, month, day] = iso.split("-").map(Number);
+  return { year, month0: month - 1, day };
+}
+
+const WEEKDAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+function weekdayShort(dateISO) {
+  const { year, month0, day } = parseYMD(dateISO);
+  return WEEKDAY_SHORT[new Date(year, month0, day).getDay()];
+}
+
+// Sunday of the current week (weeks run Monday-Sunday, matching firstDay={1}
+// on the calendar below). Built via the Date constructor (not string padding)
+// so day-of-month overflow correctly rolls into the next month/year.
+function endOfWeekISO() {
   const now = new Date();
-  now.setDate(now.getDate() + 1);
-  return ymd(now.getFullYear(), now.getMonth(), now.getDate());
+  const day = now.getDay();
+  const daysUntilSunday = day === 0 ? 0 : 7 - day;
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysUntilSunday);
+  return ymd(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
 // FullCalendar's event.start/end for our events are "naive" local datetimes
@@ -58,7 +74,7 @@ function toFullCalendarEvent(row) {
   };
 }
 
-function DayCard({ label, dayEvents, variant, onSelectEvent }) {
+function DayCard({ label, dayEvents, variant, onSelectEvent, showWeekday }) {
   const isToday = variant === "today";
   return (
     <div
@@ -80,7 +96,10 @@ function DayCard({ label, dayEvents, variant, onSelectEvent }) {
                 }`}
               >
                 <span className="truncate">{e.title}</span>
-                <span className="whitespace-nowrap font-medium">{e.start_time ? e.start_time.slice(0, 5) : "All day"}</span>
+                <span className="whitespace-nowrap font-medium">
+                  {showWeekday ? `${weekdayShort(e.start_date)} ` : ""}
+                  {e.start_time ? e.start_time.slice(0, 5) : "All day"}
+                </span>
               </button>
             </li>
           ))}
@@ -215,9 +234,17 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
   const editingEvent = editingEventId ? events.find((e) => e.id === editingEventId) || null : null;
 
   const todayDate = todayISO();
-  const tomorrowDate = tomorrowISO();
+  const weekEndDate = endOfWeekISO();
   const todayEvents = useMemo(() => events.filter((e) => e.start_date === todayDate), [events, todayDate]);
-  const tomorrowEvents = useMemo(() => events.filter((e) => e.start_date === tomorrowDate), [events, tomorrowDate]);
+  // "This week" is the rest of the week, not counting today (already shown
+  // in its own card above), sorted chronologically since it now spans days.
+  const thisWeekEvents = useMemo(
+    () =>
+      events
+        .filter((e) => e.start_date > todayDate && e.start_date <= weekEndDate)
+        .sort((a, b) => (a.start_date + (a.start_time || "")).localeCompare(b.start_date + (b.start_time || ""))),
+    [events, todayDate, weekEndDate]
+  );
 
   async function updateEvent(id, changes) {
     setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, ...changes } : e)));
@@ -261,9 +288,10 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
       <div className="space-y-4">
         <DayCard label="Today" dayEvents={todayEvents} variant="today" onSelectEvent={(e) => setEditingEventId(e.id)} />
         <DayCard
-          label="Tomorrow"
-          dayEvents={tomorrowEvents}
-          variant="tomorrow"
+          label="This week"
+          dayEvents={thisWeekEvents}
+          variant="week"
+          showWeekday
           onSelectEvent={(e) => setEditingEventId(e.id)}
         />
       </div>

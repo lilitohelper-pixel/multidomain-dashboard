@@ -216,7 +216,7 @@ export default function ExpenseCategoryCharts({
     <section className="space-y-4">
       <AddExpenseForm categoryOptions={categoryOptions} workspaces={workspaces} onAdd={addExpense} />
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-[65fr_35fr] gap-6">
         <div className="bg-stone-parchment rounded-lg border overflow-x-auto">
           <table className="w-full text-sm min-w-[30rem]">
             <thead>
