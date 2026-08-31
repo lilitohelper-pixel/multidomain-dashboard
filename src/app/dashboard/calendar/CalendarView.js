@@ -185,20 +185,39 @@ function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRem
             onChange={(ev) => ev.target.value && onUpdate(e.id, { start_date: ev.target.value })}
             className="border rounded px-2 py-1"
           />
-          <input
-            type="time"
-            defaultValue={e.start_time ? e.start_time.slice(0, 5) : ""}
-            onChange={(ev) => onUpdate(e.id, { start_time: ev.target.value || null })}
-            className="border rounded px-2 py-1"
-          />
-          <span className="text-stone-taupe">to</span>
-          <input
-            type="time"
-            defaultValue={e.end_time ? e.end_time.slice(0, 5) : ""}
-            onChange={(ev) => onUpdate(e.id, { end_time: ev.target.value || null })}
-            className="border rounded px-2 py-1"
-          />
+          <label className="flex items-center gap-2 cursor-pointer ml-1">
+            <span className="text-bark-umber">All day</span>
+            <span className="relative inline-flex items-center shrink-0">
+              <input
+                type="checkbox"
+                checked={!e.start_time}
+                onChange={(ev) =>
+                  onUpdate(e.id, ev.target.checked ? { start_time: null, end_time: null } : { start_time: "09:00:00" })
+                }
+                className="sr-only peer"
+              />
+              <span className="w-9 h-5 bg-stone-grey rounded-full peer-checked:bg-forest-hunter transition-colors" />
+              <span className="absolute left-0.5 top-0.5 w-4 h-4 bg-stone-parchment rounded-full transition-transform peer-checked:translate-x-4" />
+            </span>
+          </label>
         </div>
+        {!e.start_time ? null : (
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <input
+              type="time"
+              defaultValue={e.start_time ? e.start_time.slice(0, 5) : ""}
+              onChange={(ev) => onUpdate(e.id, { start_time: ev.target.value || null })}
+              className="border rounded px-2 py-1"
+            />
+            <span className="text-stone-taupe">to</span>
+            <input
+              type="time"
+              defaultValue={e.end_time ? e.end_time.slice(0, 5) : ""}
+              onChange={(ev) => onUpdate(e.id, { end_time: ev.target.value || null })}
+              className="border rounded px-2 py-1"
+            />
+          </div>
+        )}
         <input
           type="text"
           defaultValue={e.location || ""}
