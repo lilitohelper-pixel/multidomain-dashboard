@@ -29,7 +29,7 @@ function toHolidayEvent(holiday, index) {
     start: holiday.date,
     allDay: true,
     display: "list-item",
-    color: "#c026d3",
+    color: "#A04000", // amber.rust
     extendedProps: { isHoliday: true },
   };
 }
@@ -84,10 +84,10 @@ export default function CalendarView({ events, holidays = [], currentUserId }) {
       />
 
       {selected && (
-        <div className="mt-4 bg-white rounded-lg border p-4 flex items-start justify-between">
+        <div className="mt-4 bg-stone-parchment rounded-lg border p-4 flex items-start justify-between">
           <div>
             <p className="font-medium">{selected.title}</p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-stone-taupe">
               {selected.start_date}
               {selected.start_time ? ` ${selected.start_time.slice(0, 5)}` : " (all day)"}
               {selected.location ? ` · ${selected.location}` : ""}
@@ -96,7 +96,7 @@ export default function CalendarView({ events, holidays = [], currentUserId }) {
               {creatorLabel(selected, currentUserId) && ` · Added by ${creatorLabel(selected, currentUserId)}`}
             </p>
           </div>
-          <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600">
+          <button onClick={() => setSelected(null)} className="text-stone-grey hover:text-bark-umber">
             ✕
           </button>
         </div>

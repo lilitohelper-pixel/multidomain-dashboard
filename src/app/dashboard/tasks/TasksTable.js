@@ -190,13 +190,13 @@ export default function TasksTable({ tasks: initialTasks, currentUserId }) {
             <option key={o} value={o}>{o}</option>
           ))}
         </select>
-        <button onClick={() => setShowCustomize((s) => !s)} className="text-sm text-blue-600 hover:underline ml-auto">
+        <button onClick={() => setShowCustomize((s) => !s)} className="text-sm text-forest-hunter hover:underline ml-auto">
           {showCustomize ? "Done customizing" : "Customize columns"}
         </button>
       </div>
 
       {showCustomize && (
-        <div className="mb-4 bg-white rounded-lg border p-4 space-y-2">
+        <div className="mb-4 bg-stone-parchment rounded-lg border p-4 space-y-2">
           <p className="text-sm font-medium mb-2">Columns (check to show, arrows to reorder)</p>
           {columnPrefs.map((c, i) => {
             const col = ALL_COLUMNS.find((col) => col.key === c.key);
@@ -222,19 +222,19 @@ export default function TasksTable({ tasks: initialTasks, currentUserId }) {
       )}
 
       {visibleTasks.length === 0 ? (
-        <p className="text-gray-500">
+        <p className="text-stone-taupe">
           {tasks.length === 0 ? "No tasks yet — send one to your bot on Telegram." : "No tasks match your filters."}
         </p>
       ) : (
-        <div className="bg-white rounded-lg border overflow-x-auto">
+        <div className="bg-stone-parchment rounded-lg border overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b text-left text-gray-500">
+              <tr className="border-b text-left text-stone-taupe">
                 <th className="p-3 w-8"></th>
                 {visibleColumns.map((col) => (
                   <th key={col.key} className="p-3 font-medium whitespace-nowrap">
                     {col.sortable ? (
-                      <button onClick={() => toggleSort(col.key)} className="flex items-center gap-1 hover:text-gray-800">
+                      <button onClick={() => toggleSort(col.key)} className="flex items-center gap-1 hover:text-bark-umber">
                         {col.label}
                         {sortBy === col.key && <span>{sortDir === "asc" ? "▲" : "▼"}</span>}
                       </button>
@@ -266,7 +266,7 @@ export default function TasksTable({ tasks: initialTasks, currentUserId }) {
                     <button
                       onClick={() => deleteTask(task)}
                       title="Delete task"
-                      className="text-gray-400 hover:text-red-600"
+                      className="text-stone-grey hover:text-amber-rust"
                     >
                       🗑
                     </button>
@@ -290,8 +290,8 @@ function TaskCell({ columnKey, task, onUpdate, currentUserId }) {
         type="text"
         defaultValue={task.task}
         onBlur={(e) => e.target.value !== task.task && onUpdate(task.id, "task", e.target.value)}
-        className={`w-full min-w-[10rem] bg-transparent border-none focus:ring-1 focus:ring-blue-400 rounded px-1 ${
-          isDone ? "line-through text-gray-400" : ""
+        className={`w-full min-w-[10rem] bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-1 ${
+          isDone ? "line-through text-stone-grey" : ""
         }`}
       />
     );
@@ -305,15 +305,15 @@ function TaskCell({ columnKey, task, onUpdate, currentUserId }) {
         onBlur={(e) =>
           e.target.value !== (task.owner_name || "") && onUpdate(task.id, "owner_name", e.target.value || null)
         }
-        className="w-full min-w-[8rem] bg-transparent border-none focus:ring-1 focus:ring-blue-400 rounded px-1"
+        className="w-full min-w-[8rem] bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-1"
       />
     );
   }
   if (columnKey === "assigned_by") {
-    return <span className="text-gray-600 whitespace-nowrap">{creatorLabel(task, currentUserId)}</span>;
+    return <span className="text-stone-taupe whitespace-nowrap">{creatorLabel(task, currentUserId)}</span>;
   }
   if (columnKey === "created_at") {
-    return <span className="text-gray-600 whitespace-nowrap">{task.created_at.slice(0, 10)}</span>;
+    return <span className="text-stone-taupe whitespace-nowrap">{task.created_at.slice(0, 10)}</span>;
   }
   if (columnKey === "due_date") {
     return (
@@ -321,7 +321,7 @@ function TaskCell({ columnKey, task, onUpdate, currentUserId }) {
         type="date"
         defaultValue={task.due_date || ""}
         onChange={(e) => onUpdate(task.id, "due_date", e.target.value || null)}
-        className="bg-transparent border-none focus:ring-1 focus:ring-blue-400 rounded px-1"
+        className="bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-1"
       />
     );
   }
@@ -330,7 +330,7 @@ function TaskCell({ columnKey, task, onUpdate, currentUserId }) {
       <select
         defaultValue={task.priority || "Medium"}
         onChange={(e) => onUpdate(task.id, "priority", e.target.value)}
-        className="bg-transparent border-none focus:ring-1 focus:ring-blue-400 rounded px-1"
+        className="bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-1"
       >
         {PRIORITY_OPTIONS.map((p) => (
           <option key={p} value={p}>

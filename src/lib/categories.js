@@ -53,16 +53,17 @@ export const TOP_LEVEL_CATEGORIES = [
 
 // A fixed color per top-level category so a category keeps the same color
 // across periods, regardless of which categories have data in a given range.
+// Drawn only from the app's forest/moss/bark/amber/stone design palette.
 export const CATEGORY_COLORS = {
-  Household: "#1f77b4",
-  Food: "#f4a261",
-  Entertainment: "#1b5e20",
-  "Pet care": "#29b6d6",
-  Savings: "#9c27b0",
-  Transportation: "#8bc34a",
-  Travel: "#1a3d63",
-  "Clothing shopping": "#8d5524",
-  Other: "#9e9e9e",
+  Household: "#2C5E43", // forest.hunter
+  Food: "#D4A373", // amber.gold
+  Entertainment: "#A04000", // amber.rust
+  "Pet care": "#7C9D8E", // moss.sage
+  Savings: "#8B5A2B", // bark.sienna
+  Transportation: "#6B8E23", // moss.olive
+  Travel: "#CC6633", // amber.terracotta
+  "Clothing shopping": "#A07855", // bark.teak
+  Other: "#8C8275", // stone.taupe
 };
 
 // Deterministic thousands-separated formatting (no Intl/toLocaleString) so

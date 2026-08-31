@@ -46,12 +46,12 @@ export default async function ExpensesPage() {
       <section>
         <h2 className="text-lg font-medium mb-3">All expenses</h2>
         {expenses && expenses.length > 0 ? (
-          <div className="bg-white rounded-lg border divide-y">
+          <div className="bg-stone-parchment rounded-lg border divide-y">
             {expenses.map((e) => (
               <div key={e.id} className="p-4 flex items-center justify-between">
                 <div>
                   <p className="font-medium">{e.description || e.category}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-stone-taupe">
                     {(e.category_id && categoryPathLabel(byId, e.category_id)) || e.category || "Uncategorized"} ·{" "}
                     {workspaceLabel(e.workspaces)}
                     {creatorLabel(e, user.id) && ` · Added by ${creatorLabel(e, user.id)}`}
@@ -61,13 +61,13 @@ export default async function ExpensesPage() {
                   <p className="font-medium">
                     {e.amount != null ? `${e.currency || "USD"} ${e.amount}` : "amount not set"}
                   </p>
-                  <p className="text-sm text-gray-500">{e.date}</p>
+                  <p className="text-sm text-stone-taupe">{e.date}</p>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-gray-500">No expenses yet — send one to your bot on Telegram.</p>
+          <p className="text-stone-taupe">No expenses yet — send one to your bot on Telegram.</p>
         )}
       </section>
     </div>

@@ -20,7 +20,8 @@ const MONTH_NAMES = [
   "July", "August", "September", "October", "November", "December",
 ];
 
-const FALLBACK_COLORS = ["#2563eb", "#16a34a", "#dc2626", "#ca8a04", "#7c3aed", "#db2777"];
+// Drill-down subcategory colors, also drawn only from the design palette.
+const FALLBACK_COLORS = ["#4A7C59", "#9EBA8B", "#5C4033", "#F4A261", "#E9C46A", "#8FACA3"];
 
 // All date math below stays in local calendar components (getFullYear/getMonth/getDate,
 // or manual string parsing) rather than Date -> toISOString(), which converts to UTC and
@@ -106,12 +107,12 @@ function Dropdown({ label, children, open, onToggle }) {
     <div className="relative">
       <button
         onClick={onToggle}
-        className="text-sm font-medium text-green-700 hover:text-green-800 flex items-center gap-1"
+        className="text-sm font-medium text-forest-hunter hover:text-forest-deep flex items-center gap-1"
       >
         {label} <span className="text-xs">▾</span>
       </button>
       {open && (
-        <div className="absolute right-0 mt-1 bg-white border rounded-md shadow-lg z-10 min-w-[10rem] py-1 text-sm">
+        <div className="absolute right-0 mt-1 bg-stone-parchment border rounded-md shadow-lg z-10 min-w-[10rem] py-1 text-sm">
           {children}
         </div>
       )}
@@ -123,7 +124,7 @@ function DropdownItem({ active, onClick, children }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left px-3 py-1.5 hover:bg-gray-100 ${active ? "font-semibold text-blue-600" : "text-gray-700"}`}
+      className={`w-full text-left px-3 py-1.5 hover:bg-stone-linen ${active ? "font-semibold text-forest-hunter" : "text-bark-umber"}`}
     >
       {children}
     </button>
@@ -221,10 +222,10 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
   return (
     <section className="space-y-4">
       <div className="grid md:grid-cols-2 gap-6 items-start">
-        <div className="bg-white rounded-lg border overflow-hidden">
+        <div className="bg-stone-parchment rounded-lg border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-green-700 text-white text-left">
+              <tr className="bg-forest-deep text-stone-parchment text-left">
                 <th className="p-3 font-medium">Expense name</th>
                 <th className="p-3 font-medium">Category</th>
                 <th className="p-3 font-medium">Date</th>
@@ -236,7 +237,7 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
                 const e = last10[i];
                 if (!e) {
                   return (
-                    <tr key={`empty-${i}`} className={i % 2 === 0 ? "bg-green-50" : "bg-white"}>
+                    <tr key={`empty-${i}`} className={i % 2 === 0 ? "bg-stone-linen" : "bg-stone-parchment"}>
                       <td className="p-3">&nbsp;</td>
                       <td className="p-3"></td>
                       <td className="p-3"></td>
@@ -245,7 +246,7 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
                   );
                 }
                 return (
-                  <tr key={e.id} className={i % 2 === 0 ? "bg-green-50" : "bg-white"}>
+                  <tr key={e.id} className={i % 2 === 0 ? "bg-stone-linen" : "bg-stone-parchment"}>
                     <td className="p-1">
                       <input
                         type="text"
@@ -253,14 +254,14 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
                         onBlur={(ev) =>
                           ev.target.value !== (e.description || "") && updateExpense(e.id, { description: ev.target.value })
                         }
-                        className="w-full min-w-[8rem] bg-transparent border-none focus:ring-1 focus:ring-blue-400 rounded px-2 py-2"
+                        className="w-full min-w-[8rem] bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-2"
                       />
                     </td>
                     <td className="p-1">
                       <select
                         value={e.category_id || ""}
                         onChange={(ev) => updateCategory(e.id, ev.target.value)}
-                        className="w-full min-w-[9rem] bg-transparent border-none focus:ring-1 focus:ring-blue-400 rounded px-2 py-2 text-sm"
+                        className="w-full min-w-[9rem] bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-2 text-sm"
                       >
                         {!e.category_id && <option value="">{e.category || "Uncategorized"}</option>}
                         {categoryOptions.map((opt) => (
@@ -275,7 +276,7 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
                         type="date"
                         defaultValue={e.date}
                         onChange={(ev) => ev.target.value && updateExpense(e.id, { date: ev.target.value })}
-                        className="bg-transparent border-none focus:ring-1 focus:ring-blue-400 rounded px-2 py-2"
+                        className="bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-2"
                       />
                     </td>
                     <td className="p-1">
@@ -288,9 +289,9 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
                             const v = ev.target.value === "" ? null : Number(ev.target.value);
                             if (v !== e.amount) updateExpense(e.id, { amount: v });
                           }}
-                          className="w-20 bg-transparent border-none focus:ring-1 focus:ring-blue-400 rounded px-2 py-2"
+                          className="w-20 bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-2"
                         />
-                        <span className="text-gray-500">{e.currency || "USD"}</span>
+                        <span className="text-stone-taupe">{e.currency || "USD"}</span>
                       </div>
                     </td>
                   </tr>
@@ -300,9 +301,9 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
           </table>
         </div>
 
-        <div className="bg-white rounded-lg border p-4">
+        <div className="bg-stone-parchment rounded-lg border p-4">
           <div className="flex items-start justify-between mb-2">
-            <h3 className="text-lg font-semibold text-green-800">
+            <h3 className="text-lg font-semibold text-forest-deep">
               {selectedCategory ? `${selectedCategory} — ${periodLabel}` : periodLabel}
             </h3>
             <div className="flex items-center gap-4">
@@ -310,7 +311,7 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
                 <DropdownItem active={periodMode === "weekly"} onClick={() => { setPeriodMode("weekly"); setSortOpen(false); }}>
                   Weekly
                 </DropdownItem>
-                <div className="px-3 py-1.5 text-xs text-gray-400 uppercase">Monthly</div>
+                <div className="px-3 py-1.5 text-xs text-stone-grey uppercase">Monthly</div>
                 {months.map((m) => (
                   <DropdownItem
                     key={`${m.year}-${m.month}`}
@@ -320,7 +321,7 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
                     {MONTH_NAMES[m.month]} {m.year}
                   </DropdownItem>
                 ))}
-                <div className="px-3 py-1.5 text-xs text-gray-400 uppercase">Annually</div>
+                <div className="px-3 py-1.5 text-xs text-stone-grey uppercase">Annually</div>
                 {years.map((y) => (
                   <DropdownItem
                     key={y}
@@ -354,7 +355,7 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
           </div>
 
           {chartData.length === 0 ? (
-            <p className="text-gray-500 text-sm py-12 text-center">No categorized expenses in this range.</p>
+            <p className="text-stone-taupe text-sm py-12 text-center">No categorized expenses in this range.</p>
           ) : (
             <>
               <ResponsiveContainer width="100%" height={280}>
@@ -393,10 +394,10 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
       </div>
 
       {showManageSavings && (
-        <div className="bg-white rounded-lg border p-4">
+        <div className="bg-stone-parchment rounded-lg border p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-medium">Savings categories</h3>
-            <button onClick={() => setShowManageSavings(false)} className="text-sm text-blue-600 hover:underline">
+            <button onClick={() => setShowManageSavings(false)} className="text-sm text-forest-hunter hover:underline">
               Close
             </button>
           </div>

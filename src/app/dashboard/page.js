@@ -34,9 +34,9 @@ export default async function TodayPage() {
         {tasks && tasks.length > 0 ? (
           <ul className="space-y-2">
             {tasks.map((t) => (
-              <li key={t.id} className="bg-white rounded-lg border p-3 flex justify-between">
+              <li key={t.id} className="bg-stone-parchment rounded-lg border p-3 flex justify-between">
                 <span>{t.task}</span>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-stone-taupe">
                   {t.priority} · {workspaceLabel(t.workspaces)}
                   {creatorLabel(t, user.id) && ` · ${creatorLabel(t, user.id)}`}
                 </span>
@@ -44,7 +44,7 @@ export default async function TodayPage() {
             ))}
           </ul>
         ) : (
-          <p className="text-gray-500">Nothing due today.</p>
+          <p className="text-stone-taupe">Nothing due today.</p>
         )}
       </section>
 
@@ -53,9 +53,9 @@ export default async function TodayPage() {
         {events && events.length > 0 ? (
           <ul className="space-y-2">
             {events.map((e) => (
-              <li key={e.id} className="bg-white rounded-lg border p-3 flex justify-between">
+              <li key={e.id} className="bg-stone-parchment rounded-lg border p-3 flex justify-between">
                 <span>{e.title}</span>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-stone-taupe">
                   {e.start_time || "All day"} · {workspaceLabel(e.workspaces)}
                   {creatorLabel(e, user.id) && ` · ${creatorLabel(e, user.id)}`}
                 </span>
@@ -63,7 +63,7 @@ export default async function TodayPage() {
             ))}
           </ul>
         ) : (
-          <p className="text-gray-500">No events today.</p>
+          <p className="text-stone-taupe">No events today.</p>
         )}
       </section>
 
