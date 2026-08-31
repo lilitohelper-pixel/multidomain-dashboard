@@ -1,13 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import { workspaceLabel, creatorLabel } from "@/lib/displayNames";
-import { buildCategoryIndex, categoryPathLabel, isIncomeCategory } from "@/lib/categories";
 import ExpenseCategoryCharts from "./ExpenseCategoryCharts";
+import AllExpensesTable from "./AllExpensesTable";
 
 export default async function ExpensesPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
   const { data: savingsParent } = await supabase
     .from("expense_categories")
     .select("id")
@@ -29,8 +25,6 @@ export default async function ExpensesPage() {
       : Promise.resolve({ data: [] }),
   ]);
 
-  const byId = buildCategoryIndex(categories || []);
-
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-semibold">Expenses</h1>
@@ -45,32 +39,7 @@ export default async function ExpensesPage() {
 
       <section>
         <h2 className="text-lg font-medium mb-3">All expenses</h2>
-        {expenses && expenses.length > 0 ? (
-          <div className="bg-stone-parchment rounded-lg border divide-y">
-            {expenses.map((e) => (
-              <div key={e.id} className="p-4 flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{e.description || e.category}</p>
-                  <p className="text-sm text-stone-taupe">
-                    {(e.category_id && categoryPathLabel(byId, e.category_id)) || e.category || "Uncategorized"} ·{" "}
-                    {workspaceLabel(e.workspaces)}
-                    {creatorLabel(e, user.id) && ` · Added by ${creatorLabel(e, user.id)}`}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className={`font-medium ${isIncomeCategory(byId, e.category_id) ? "text-forest-hunter" : "text-amber-rust"}`}>
-                    {e.amount != null
-                      ? `${isIncomeCategory(byId, e.category_id) ? "+" : "-"}${e.currency || "USD"} ${e.amount}`
-                      : "amount not set"}
-                  </p>
-                  <p className="text-sm text-stone-taupe">{e.date}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-stone-taupe">No expenses yet — send one to your bot on Telegram.</p>
-        )}
+        <AllExpensesTable expenses={expenses || []} categories={categories || []} />
       </section>
     </div>
   );
