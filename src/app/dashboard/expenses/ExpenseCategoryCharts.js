@@ -302,9 +302,9 @@ export default function ExpenseCategoryCharts({ expenses: initialExpenses, categ
             <p className="text-stone-taupe text-sm py-12 text-center">No categorized expenses in this range.</p>
           ) : (
             <>
-              <ResponsiveContainer width="100%" height={322}>
+              <ResponsiveContainer width="100%" height={370}>
                 <PieChart>
-                  <Pie data={chartData} dataKey="value" nameKey="name" outerRadius={115}>
+                  <Pie data={chartData} dataKey="value" nameKey="name" outerRadius={132}>
                     {chartData.map((entry, i) => (
                       <Cell
                         key={entry.name}
