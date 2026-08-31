@@ -1,98 +1,60 @@
 @import "tailwindcss";
-
-@theme {
-  /* Forest, moss, bark, amber and stone — the only colors used anywhere in this app. */
-  --color-forest-shadow: #1a3021;
-  --color-forest-deep: #234531;
-  --color-forest-hunter: #2c5e43;
-  --color-forest-spruce: #3a6b52;
-  --color-forest-juniper: #4a7c59;
-
-  --color-moss-deep: #557a46;
-  --color-moss-olive: #6b8e23;
-  --color-moss-sage: #7c9d8e;
-  --color-moss-lichen: #8faca3;
-  --color-moss-fern: #9eba8b;
-
-  --color-bark-walnut: #3b2f2f;
-  --color-bark-umber: #5c4033;
-  --color-bark-sienna: #8b5a2b;
-  --color-bark-teak: #a07855;
-  --color-bark-fawn: #c4a482;
-
-  --color-amber-rust: #a04000;
-  --color-amber-terracotta: #cc6633;
-  --color-amber-gold: #d4a373;
-  --color-amber-ochre: #e9c46a;
-  --color-amber-peach: #f4a261;
-
-  --color-stone-grey: #a39e93;
-  --color-stone-taupe: #8c8275;
-  --color-stone-linen: #e9edc9;
-  --color-stone-parchment: #fdfcf0;
-  --color-stone-slate: #d8e2dc;
-}
-
-:root {
-  --background: var(--color-stone-parchment);
-  --foreground: var(--color-bark-walnut);
-}
+@import "./theme-tokens.css";
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: var(--color-forest-shadow);
-    --foreground: var(--color-stone-linen);
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
 
 /* Tailwind v4 defaults unset border-color utilities to currentColor; give bare
-   `border` classes a deliberate palette color instead, same role v3's preflight
+   `border` classes a deliberate token color instead, same role v3's preflight
    default used to play. */
 @layer base {
   *,
   ::before,
   ::after {
-    border-color: var(--color-stone-grey);
+    border-color: var(--border);
+  }
+}
+
+/* Optional transition when switching schemes. Remove if you prefer an
+   instant swap; it is skipped for anyone who asked for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  body,
+  body * {
+    transition: background-color 180ms ease, border-color 180ms ease,
+      color 180ms ease;
   }
 }
 
 /* FullCalendar ships its own default (blue) theme; retheme it via its
    supported CSS custom properties instead of fighting its stylesheet specificity. */
 :root {
-  --fc-page-bg-color: var(--color-stone-parchment);
-  --fc-neutral-bg-color: var(--color-stone-linen);
-  --fc-neutral-text-color: var(--color-bark-umber);
-  --fc-border-color: var(--color-stone-grey);
+  --fc-page-bg-color: var(--surface);
+  --fc-neutral-bg-color: var(--surface-alt);
+  --fc-neutral-text-color: var(--text-muted);
+  --fc-border-color: var(--border);
 
-  --fc-button-text-color: var(--color-stone-parchment);
-  --fc-button-bg-color: var(--color-forest-hunter);
-  --fc-button-border-color: var(--color-forest-hunter);
-  --fc-button-hover-bg-color: var(--color-forest-deep);
-  --fc-button-hover-border-color: var(--color-forest-deep);
-  --fc-button-active-bg-color: var(--color-forest-shadow);
-  --fc-button-active-border-color: var(--color-forest-shadow);
+  --fc-button-text-color: var(--action-text);
+  --fc-button-bg-color: var(--action);
+  --fc-button-border-color: var(--action);
+  --fc-button-hover-bg-color: var(--action-hover);
+  --fc-button-hover-border-color: var(--action-hover);
+  --fc-button-active-bg-color: var(--action-hover);
+  --fc-button-active-border-color: var(--action-hover);
 
-  --fc-event-bg-color: var(--color-forest-spruce);
-  --fc-event-border-color: var(--color-forest-spruce);
-  --fc-event-text-color: var(--color-stone-parchment);
+  --fc-event-bg-color: var(--event-dot);
+  --fc-event-border-color: var(--event-dot);
+  --fc-event-text-color: var(--action-text);
 
-  --fc-more-link-bg-color: var(--color-stone-linen);
-  --fc-more-link-text-color: var(--color-bark-umber);
+  --fc-more-link-bg-color: var(--surface-alt);
+  --fc-more-link-text-color: var(--text-muted);
 
   --fc-non-business-color: rgba(163, 158, 147, 0.15);
-  --fc-today-bg-color: rgba(233, 196, 106, 0.25);
-  --fc-now-indicator-color: var(--color-amber-rust);
+  --fc-today-bg-color: var(--today-bg);
+  --fc-now-indicator-color: var(--holiday-text);
 }

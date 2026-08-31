@@ -40,10 +40,10 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
 
   return (
     <div className="space-y-3">
-      <div className="bg-stone-parchment rounded-lg border overflow-x-auto">
+      <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] overflow-x-auto">
         <table className="w-full text-sm min-w-[32rem]">
           <thead>
-            <tr className="bg-forest-deep text-stone-parchment text-left">
+            <tr className="bg-[var(--table-head-bg)] text-[var(--table-head-text)] text-left">
               <th className="p-2 font-medium">Expense name</th>
               <th className="p-2 font-medium">Category</th>
               <th className="p-2 font-medium w-36">Date</th>
@@ -55,7 +55,7 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
           <tbody>
             {pageRows.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-4 text-center text-stone-taupe">
+                <td colSpan={6} className="p-4 text-center text-[var(--text-muted)]">
                   No expenses yet — send one to your bot on Telegram.
                 </td>
               </tr>
@@ -69,7 +69,7 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
                   onUpdate={updateExpense}
                   onUpdateCategory={updateCategory}
                   onDelete={deleteExpense}
-                  rowClassName={i % 2 === 0 ? "bg-stone-linen" : "bg-stone-parchment"}
+                  rowClassName={i % 2 === 0 ? "bg-[var(--surface-alt)]" : "bg-[var(--surface)]"}
                 />
               ))
             )}
@@ -79,21 +79,21 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
         <div className="flex items-center gap-2">
-          <span className="text-stone-taupe">Show</span>
+          <span className="text-[var(--text-muted)]">Show</span>
           {PAGE_SIZE_OPTIONS.map((size) => (
             <button
               key={size}
               onClick={() => changePageSize(size)}
-              className={`px-2 py-1 rounded-md border ${
+              className={`px-2 py-1 rounded-md border border-[var(--border)] ${
                 pageSize === size
-                  ? "bg-forest-hunter text-stone-parchment border-forest-hunter"
-                  : "bg-stone-parchment text-bark-umber"
+                  ? "bg-[var(--action)] text-[var(--action-text)] border-[var(--action)]"
+                  : "bg-[var(--surface)] text-[var(--text)]"
               }`}
             >
               {size}
             </button>
           ))}
-          <span className="text-stone-taupe">rows</span>
+          <span className="text-[var(--text-muted)]">rows</span>
         </div>
 
         {totalPages > 1 && (
@@ -101,13 +101,13 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="px-2 py-1 rounded-md text-forest-hunter disabled:text-stone-grey disabled:cursor-not-allowed hover:underline"
+              className="px-2 py-1 rounded-md text-[var(--action)] disabled:text-[var(--text-faint)] disabled:cursor-not-allowed hover:underline"
             >
               Prev
             </button>
             {pageNumbers(currentPage, totalPages).map((p) =>
               typeof p === "string" ? (
-                <span key={p} className="px-1 text-stone-taupe">
+                <span key={p} className="px-1 text-[var(--text-muted)]">
                   …
                 </span>
               ) : (
@@ -115,7 +115,7 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
                   key={p}
                   onClick={() => setPage(p)}
                   className={`px-2 py-1 rounded-md ${
-                    p === currentPage ? "bg-forest-hunter text-stone-parchment" : "text-forest-hunter hover:underline"
+                    p === currentPage ? "bg-[var(--action)] text-[var(--action-text)]" : "text-[var(--action)] hover:underline"
                   }`}
                 >
                   {p}
@@ -125,7 +125,7 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="px-2 py-1 rounded-md text-forest-hunter disabled:text-stone-grey disabled:cursor-not-allowed hover:underline"
+              className="px-2 py-1 rounded-md text-[var(--action)] disabled:text-[var(--text-faint)] disabled:cursor-not-allowed hover:underline"
             >
               Next
             </button>

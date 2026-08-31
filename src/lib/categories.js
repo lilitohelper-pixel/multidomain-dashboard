@@ -55,20 +55,29 @@ export const TOP_LEVEL_CATEGORIES = [
   "Other",
 ];
 
-// A fixed color per top-level category so a category keeps the same color
-// across periods, regardless of which categories have data in a given range.
-// Drawn only from the app's forest/moss/bark/amber/stone design palette.
-export const CATEGORY_COLORS = {
-  Household: "#2C5E43", // forest.hunter
-  Food: "#D4A373", // amber.gold
-  Entertainment: "#A04000", // amber.rust
-  "Pet care": "#7C9D8E", // moss.sage
-  Savings: "#8B5A2B", // bark.sienna
-  Transportation: "#6B8E23", // moss.olive
-  Travel: "#CC6633", // amber.terracotta
-  "Clothing shopping": "#A07855", // bark.teak
-  Other: "#8C8275", // stone.taupe
+// A fixed CSS custom property per top-level category, so a category keeps the
+// same slot across periods and across theme switches (each theme resolves
+// these variables to its own palette — see src/app/theme-tokens.css).
+export const CATEGORY_COLOR_VARS = {
+  Household: "--cat-household",
+  Food: "--cat-food",
+  Entertainment: "--cat-entertainment",
+  "Pet care": "--cat-pet-care",
+  Savings: "--cat-savings",
+  Transportation: "--cat-transportation",
+  Travel: "--cat-travel",
+  "Clothing shopping": "--cat-clothing",
+  Other: "--cat-other",
 };
+
+// Reads the current value of a CSS custom property from the document root.
+// Used to resolve theme-aware colors (e.g. for Recharts, which needs real
+// color strings and can't take a live `var(...)` reference).
+export function resolveCssVar(name, fallback = "#999999") {
+  if (typeof window === "undefined") return fallback;
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || fallback;
+}
 
 // Deterministic thousands-separated formatting (no Intl/toLocaleString) so
 // server and client render identically regardless of locale — avoids the same

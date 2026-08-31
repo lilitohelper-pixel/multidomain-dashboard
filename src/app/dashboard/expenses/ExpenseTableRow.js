@@ -14,7 +14,7 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
           onBlur={(ev) =>
             ev.target.value !== (e.description || "") && onUpdate(e.id, { description: ev.target.value })
           }
-          className="w-full min-w-[7rem] bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-1"
+          className="w-full min-w-[7rem] bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-2 py-1"
         />
       </td>
       <td className="p-1 w-80">
@@ -22,7 +22,7 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
           value={e.category_id || ""}
           onChange={(ev) => onUpdateCategory(e.id, ev.target.value)}
           title={currentLabel}
-          className="w-full max-w-[19.25rem] truncate bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-1 text-sm"
+          className="w-full max-w-[19.25rem] truncate bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-2 py-1 text-sm"
         >
           {!e.category_id && <option value="">{e.category || "Uncategorized"}</option>}
           {categoryOptions.map((opt) => (
@@ -37,14 +37,14 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
           type="date"
           defaultValue={e.date}
           onChange={(ev) => ev.target.value && onUpdate(e.id, { date: ev.target.value })}
-          className="w-full bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-1"
+          className="w-full bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-2 py-1"
         />
       </td>
       <td className="p-1 w-28">
         <div className="flex items-center gap-1">
           <span
             className={`w-3 shrink-0 text-center ${
-              isIncomeCategory(byId, e.category_id) ? "text-forest-hunter" : "text-amber-rust"
+              isIncomeCategory(byId, e.category_id) ? "text-[var(--positive)]" : "text-[var(--holiday-text)]"
             }`}
           >
             {isIncomeCategory(byId, e.category_id) ? "+" : "-"}
@@ -59,12 +59,12 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
               if (!Number.isNaN(v) && v !== e.amount) onUpdate(e.id, { amount: v });
               ev.target.value = v != null && !Number.isNaN(v) ? formatAmount(v) : "";
             }}
-            className="w-full min-w-0 bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-2 py-1"
+            className="w-full min-w-0 bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-2 py-1"
           />
         </div>
       </td>
       <td className="p-1 w-14 text-center">
-        <span className="text-stone-taupe text-xs">{e.currency || "USD"}</span>
+        <span className="text-[var(--text-muted)] text-xs">{e.currency || "USD"}</span>
       </td>
       <td className="p-1 w-14 text-center">
         <button
@@ -72,7 +72,7 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
             if (window.confirm(`Delete "${e.description || "this expense"}"? This can't be undone.`)) onDelete(e.id);
           }}
           title="Delete expense"
-          className="text-stone-grey hover:text-amber-rust"
+          className="text-[var(--text-faint)] hover:text-[var(--holiday-text)]"
         >
           🗑
         </button>

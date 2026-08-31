@@ -54,9 +54,9 @@ export default function SavingsCategoriesManager({ initialCategories, workspaces
 
   return (
     <div className="space-y-4">
-      <form onSubmit={addCategory} className="bg-stone-parchment rounded-lg border p-4 flex flex-wrap items-end gap-3">
+      <form onSubmit={addCategory} className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4 flex flex-wrap items-end gap-3">
         <div className="flex-1 min-w-[10rem]">
-          <label className="block text-sm text-stone-taupe mb-1">New Savings goal</label>
+          <label className="block text-sm text-[var(--text-muted)] mb-1">New Savings goal</label>
           <input
             type="text"
             value={name}
@@ -67,7 +67,7 @@ export default function SavingsCategoriesManager({ initialCategories, workspaces
         </div>
         {workspaces.length > 1 && (
           <div>
-            <label className="block text-sm text-stone-taupe mb-1">Workspace</label>
+            <label className="block text-sm text-[var(--text-muted)] mb-1">Workspace</label>
             <select
               value={workspaceId}
               onChange={(e) => setWorkspaceId(e.target.value)}
@@ -84,26 +84,26 @@ export default function SavingsCategoriesManager({ initialCategories, workspaces
         <button
           type="submit"
           disabled={saving || !name.trim() || !workspaceId}
-          className="bg-forest-hunter text-stone-parchment text-sm px-4 py-1.5 rounded-md disabled:opacity-50"
+          className="bg-[var(--action)] text-[var(--action-text)] text-sm px-4 py-1.5 rounded-md disabled:opacity-50"
         >
           {saving ? "Adding..." : "Add"}
         </button>
       </form>
-      {errorMsg && <p className="text-sm text-amber-rust">{errorMsg}</p>}
+      {errorMsg && <p className="text-sm text-[var(--holiday-text)]">{errorMsg}</p>}
 
       {categories.length === 0 ? (
-        <p className="text-stone-taupe">No custom Savings categories yet.</p>
+        <p className="text-[var(--text-muted)]">No custom Savings categories yet.</p>
       ) : (
-        <div className="bg-stone-parchment rounded-lg border divide-y">
+        <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] divide-y divide-[var(--border)]">
           {categories.map((c) => (
             <div key={c.id} className="p-3 flex items-center justify-between">
               <div>
                 <span>{c.name}</span>
                 {workspaces.length > 1 && (
-                  <span className="text-sm text-stone-taupe ml-2">{workspaceLabel(c.workspaces)}</span>
+                  <span className="text-sm text-[var(--text-muted)] ml-2">{workspaceLabel(c.workspaces)}</span>
                 )}
               </div>
-              <button onClick={() => deleteCategory(c)} title="Delete category" className="text-stone-grey hover:text-amber-rust">
+              <button onClick={() => deleteCategory(c)} title="Delete category" className="text-[var(--text-faint)] hover:text-[var(--holiday-text)]">
                 🗑
               </button>
             </div>

@@ -79,13 +79,18 @@ function DayCard({ label, dayEvents, variant, onSelectEvent, showWeekday }) {
   const isToday = variant === "today";
   return (
     <div
-      className={`rounded-2xl border p-4 space-y-3 ${
-        isToday ? "bg-moss-sage text-stone-parchment border-moss-sage" : "bg-stone-parchment text-bark-walnut border-bark-walnut"
-      }`}
+      className="rounded-2xl border p-4 space-y-3"
+      style={
+        isToday
+          ? { background: "var(--nav-bg)", color: "var(--nav-text)", borderColor: "var(--nav-bg)" }
+          : { background: "var(--surface)", color: "var(--text)", borderColor: "var(--border)" }
+      }
     >
       <h3 className="text-lg font-semibold">{label}</h3>
       {dayEvents.length === 0 ? (
-        <p className={`text-sm ${isToday ? "text-stone-parchment/80" : "text-stone-taupe"}`}>No events.</p>
+        <p className="text-sm" style={{ color: isToday ? "var(--nav-muted)" : "var(--text-muted)" }}>
+          No events.
+        </p>
       ) : (
         <ul className="space-y-2">
           {dayEvents.map((e) => (
@@ -93,7 +98,7 @@ function DayCard({ label, dayEvents, variant, onSelectEvent, showWeekday }) {
               <button
                 onClick={() => onSelectEvent(e)}
                 className={`w-full flex items-center justify-between gap-3 text-left rounded px-1 -mx-1 ${
-                  isToday ? "hover:bg-white/10" : "hover:bg-stone-linen"
+                  isToday ? "hover:bg-white/10" : "hover:bg-[var(--surface-alt)]"
                 }`}
               >
                 <span className="truncate">{e.title}</span>
@@ -115,18 +120,18 @@ function GuestList({ eventId, guests, onAdd, onRemove }) {
   const eventGuests = guests.filter((g) => g.event_id === eventId);
 
   return (
-    <div className="mt-2 pt-2 border-t space-y-1">
-      <p className="text-xs font-medium text-bark-umber">Guests</p>
+    <div className="mt-2 pt-2 border-t border-[var(--border)] space-y-1">
+      <p className="text-xs font-medium text-[var(--text)]">Guests</p>
       {eventGuests.length === 0 ? (
-        <p className="text-xs text-stone-taupe">No guests invited yet.</p>
+        <p className="text-xs text-[var(--text-muted)]">No guests invited yet.</p>
       ) : (
         <ul className="space-y-1">
           {eventGuests.map((g) => (
             <li key={g.id} className="flex items-center justify-between text-xs">
               <span>
-                {g.email} <span className="text-stone-taupe">({g.status})</span>
+                {g.email} <span className="text-[var(--text-muted)]">({g.status})</span>
               </span>
-              <button onClick={() => onRemove(g.id)} className="text-stone-grey hover:text-amber-rust">
+              <button onClick={() => onRemove(g.id)} className="text-[var(--text-faint)] hover:text-[var(--holiday-text)]">
                 ✕
               </button>
             </li>
@@ -148,13 +153,13 @@ function GuestList({ eventId, guests, onAdd, onRemove }) {
           value={email}
           onChange={(ev) => setEmail(ev.target.value)}
           placeholder="Invite by email"
-          className="flex-1 min-w-0 border rounded px-2 py-1 text-xs"
+          className="flex-1 min-w-0 border border-[var(--border)] rounded px-2 py-1 text-xs"
         />
-        <button type="submit" className="text-xs bg-forest-hunter text-stone-parchment px-2 py-1 rounded shrink-0">
+        <button type="submit" className="text-xs bg-[var(--action)] text-[var(--action-text)] px-2 py-1 rounded shrink-0">
           Invite
         </button>
       </form>
-      <p className="text-[10px] text-stone-taupe">
+      <p className="text-[10px] text-[var(--text-muted)]">
         Guests are tracked here, but invite emails aren&apos;t sent automatically yet.
       </p>
     </div>
@@ -163,9 +168,9 @@ function GuestList({ eventId, guests, onAdd, onRemove }) {
 
 function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRemoveGuest }) {
   return (
-    <div className="fixed inset-0 bg-bark-walnut/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div
-        className="bg-stone-parchment rounded-lg border p-4 w-full max-w-md space-y-2"
+        className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4 w-full max-w-md space-y-2"
         onClick={(ev) => ev.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-2">
@@ -173,9 +178,9 @@ function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRem
             type="text"
             defaultValue={e.title}
             onBlur={(ev) => ev.target.value !== e.title && onUpdate(e.id, { title: ev.target.value })}
-            className="font-medium bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-1 flex-1 min-w-0"
+            className="font-medium bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-1 flex-1 min-w-0"
           />
-          <button onClick={onClose} className="text-stone-grey hover:text-bark-umber shrink-0">
+          <button onClick={onClose} className="text-[var(--text-faint)] hover:text-[var(--text)] shrink-0">
             ✕
           </button>
         </div>
@@ -184,10 +189,10 @@ function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRem
             type="date"
             defaultValue={e.start_date}
             onChange={(ev) => ev.target.value && onUpdate(e.id, { start_date: ev.target.value })}
-            className="border rounded px-2 py-1"
+            className="border border-[var(--border)] rounded px-2 py-1"
           />
           <label className="flex items-center gap-2 cursor-pointer ml-1">
-            <span className="text-bark-umber">All day</span>
+            <span className="text-[var(--text)]">All day</span>
             <span className="relative inline-flex items-center shrink-0">
               <input
                 type="checkbox"
@@ -197,8 +202,8 @@ function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRem
                 }
                 className="sr-only peer"
               />
-              <span className="w-9 h-5 bg-stone-grey rounded-full peer-checked:bg-forest-hunter transition-colors" />
-              <span className="absolute left-0.5 top-0.5 w-4 h-4 bg-stone-parchment rounded-full transition-transform peer-checked:translate-x-4" />
+              <span className="w-9 h-5 bg-[var(--border-strong)] rounded-full peer-checked:bg-[var(--action)] transition-colors" />
+              <span className="absolute left-0.5 top-0.5 w-4 h-4 bg-[var(--surface)] rounded-full transition-transform peer-checked:translate-x-4" />
             </span>
           </label>
         </div>
@@ -208,14 +213,14 @@ function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRem
               type="time"
               defaultValue={e.start_time ? e.start_time.slice(0, 5) : ""}
               onChange={(ev) => onUpdate(e.id, { start_time: ev.target.value || null })}
-              className="border rounded px-2 py-1"
+              className="border border-[var(--border)] rounded px-2 py-1"
             />
-            <span className="text-stone-taupe">to</span>
+            <span className="text-[var(--text-muted)]">to</span>
             <input
               type="time"
               defaultValue={e.end_time ? e.end_time.slice(0, 5) : ""}
               onChange={(ev) => onUpdate(e.id, { end_time: ev.target.value || null })}
-              className="border rounded px-2 py-1"
+              className="border border-[var(--border)] rounded px-2 py-1"
             />
           </div>
         )}
@@ -224,7 +229,7 @@ function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRem
           defaultValue={e.location || ""}
           placeholder="Location"
           onBlur={(ev) => ev.target.value !== (e.location || "") && onUpdate(e.id, { location: ev.target.value || null })}
-          className="w-full border rounded px-2 py-1 text-sm"
+          className="w-full border border-[var(--border)] rounded px-2 py-1 text-sm"
         />
         <GuestList eventId={e.id} guests={guests} onAdd={onAddGuest} onRemove={onRemoveGuest} />
       </div>
@@ -258,10 +263,10 @@ function NewEventModal({ draft, workspaces, onClose, onCreate }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-bark-walnut/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <form
         onSubmit={handleSubmit}
-        className="bg-stone-parchment rounded-lg border p-4 w-full max-w-md space-y-2"
+        className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4 w-full max-w-md space-y-2"
         onClick={(ev) => ev.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-2">
@@ -271,9 +276,9 @@ function NewEventModal({ draft, workspaces, onClose, onCreate }) {
             value={title}
             onChange={(ev) => setTitle(ev.target.value)}
             placeholder="Event title"
-            className="font-medium bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-1 flex-1 min-w-0"
+            className="font-medium bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-1 flex-1 min-w-0"
           />
-          <button type="button" onClick={onClose} className="text-stone-grey hover:text-bark-umber shrink-0">
+          <button type="button" onClick={onClose} className="text-[var(--text-faint)] hover:text-[var(--text)] shrink-0">
             ✕
           </button>
         </div>
@@ -282,10 +287,10 @@ function NewEventModal({ draft, workspaces, onClose, onCreate }) {
             type="date"
             value={date}
             onChange={(ev) => setDate(ev.target.value)}
-            className="border rounded px-2 py-1"
+            className="border border-[var(--border)] rounded px-2 py-1"
           />
           <label className="flex items-center gap-2 cursor-pointer ml-1">
-            <span className="text-bark-umber">All day</span>
+            <span className="text-[var(--text)]">All day</span>
             <span className="relative inline-flex items-center shrink-0">
               <input
                 type="checkbox"
@@ -293,8 +298,8 @@ function NewEventModal({ draft, workspaces, onClose, onCreate }) {
                 onChange={(ev) => setAllDay(ev.target.checked)}
                 className="sr-only peer"
               />
-              <span className="w-9 h-5 bg-stone-grey rounded-full peer-checked:bg-forest-hunter transition-colors" />
-              <span className="absolute left-0.5 top-0.5 w-4 h-4 bg-stone-parchment rounded-full transition-transform peer-checked:translate-x-4" />
+              <span className="w-9 h-5 bg-[var(--border-strong)] rounded-full peer-checked:bg-[var(--action)] transition-colors" />
+              <span className="absolute left-0.5 top-0.5 w-4 h-4 bg-[var(--surface)] rounded-full transition-transform peer-checked:translate-x-4" />
             </span>
           </label>
         </div>
@@ -304,14 +309,14 @@ function NewEventModal({ draft, workspaces, onClose, onCreate }) {
               type="time"
               value={startTime}
               onChange={(ev) => setStartTime(ev.target.value)}
-              className="border rounded px-2 py-1"
+              className="border border-[var(--border)] rounded px-2 py-1"
             />
-            <span className="text-stone-taupe">to</span>
+            <span className="text-[var(--text-muted)]">to</span>
             <input
               type="time"
               value={endTime}
               onChange={(ev) => setEndTime(ev.target.value)}
-              className="border rounded px-2 py-1"
+              className="border border-[var(--border)] rounded px-2 py-1"
             />
           </div>
         )}
@@ -320,13 +325,13 @@ function NewEventModal({ draft, workspaces, onClose, onCreate }) {
           value={location}
           onChange={(ev) => setLocation(ev.target.value)}
           placeholder="Location"
-          className="w-full border rounded px-2 py-1 text-sm"
+          className="w-full border border-[var(--border)] rounded px-2 py-1 text-sm"
         />
         {workspaces.length > 1 && (
           <select
             value={workspaceId}
             onChange={(ev) => setWorkspaceId(ev.target.value)}
-            className="w-full border rounded px-2 py-1 text-sm"
+            className="w-full border border-[var(--border)] rounded px-2 py-1 text-sm"
           >
             {workspaces.map((w) => (
               <option key={w.id} value={w.id}>
@@ -338,11 +343,11 @@ function NewEventModal({ draft, workspaces, onClose, onCreate }) {
         <button
           type="submit"
           disabled={!title.trim() || !workspaceId || saving}
-          className="w-full bg-forest-hunter text-stone-parchment text-sm px-4 py-1.5 rounded-md disabled:opacity-50"
+          className="w-full bg-[var(--action)] text-[var(--action-text)] text-sm px-4 py-1.5 rounded-md disabled:opacity-50"
         >
           {saving ? "Adding..." : "Add meeting"}
         </button>
-        <p className="text-[10px] text-stone-taupe">You can invite guests after creating the meeting.</p>
+        <p className="text-[10px] text-[var(--text-muted)]">You can invite guests after creating the meeting.</p>
       </form>
     </div>
   );
@@ -360,6 +365,19 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
   const [draftEvent, setDraftEvent] = useState(null);
   const calendarRef = useRef(null);
   const containerRef = useRef(null);
+
+  // dayCellDidMount below bakes resolved theme colors into inline styles at
+  // mount time (FullCalendar's own CSS-var theming doesn't reach cells we
+  // style imperatively), so the grid needs a full remount to pick up a
+  // theme switch — keying the calendar on the theme id forces that.
+  const [theme, setTheme] = useState("ember");
+  useEffect(() => {
+    const root = document.documentElement;
+    setTheme(root.getAttribute("data-theme") || "ember");
+    const observer = new MutationObserver(() => setTheme(root.getAttribute("data-theme") || "ember"));
+    observer.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
 
   const holidayByDate = useMemo(() => {
     const map = {};
@@ -450,8 +468,9 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
       </div>
 
       <div ref={containerRef}>
-        <div className="bg-stone-parchment rounded-lg border overflow-hidden p-4">
+        <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] overflow-hidden p-4">
           <FullCalendar
+            key={theme}
             ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin]}
             initialView="dayGridMonth"
@@ -523,6 +542,13 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
               const eventsContainer = arg.el.querySelector(".fc-daygrid-day-events");
               if (eventsContainer) eventsContainer.style.minHeight = "44px";
 
+              const rootStyle = getComputedStyle(document.documentElement);
+              const dayOfWeek = arg.date.getDay();
+              const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+              if (isWeekend) {
+                arg.el.style.backgroundColor = rootStyle.getPropertyValue("--day-weekend").trim();
+              }
+
               // Inserted imperatively (not via dayCellContent) because that hook
               // only replaces content *inside* FullCalendar's day-number badge —
               // a full-width flex row placed there fights the badge's own sizing
@@ -532,7 +558,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
               const holidayName = holidayByDate[dateStr];
               if (!holidayName) return;
 
-              arg.el.style.backgroundColor = "rgba(160, 64, 0, 0.12)";
+              arg.el.style.backgroundColor = rootStyle.getPropertyValue("--holiday-bg").trim();
 
               const top = arg.el.querySelector(".fc-daygrid-day-top");
               if (top && !top.querySelector(".holiday-label")) {
@@ -555,8 +581,9 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
                 const label = document.createElement("span");
                 label.className = "holiday-label";
                 label.textContent = holidayName;
-                label.style.cssText =
-                  "font-size:10px;font-weight:600;color:#A04000;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:4px;";
+                label.style.cssText = `font-size:10px;font-weight:600;color:${rootStyle
+                  .getPropertyValue("--holiday-text")
+                  .trim()};flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:4px;`;
                 top.insertBefore(label, top.firstChild);
               }
             }}

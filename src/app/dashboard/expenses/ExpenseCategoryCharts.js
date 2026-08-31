@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { topLevelCategory, secondLevelCategory, TOP_LEVEL_CATEGORIES, CATEGORY_COLORS, formatAmount } from "@/lib/categories";
+import { topLevelCategory, secondLevelCategory, TOP_LEVEL_CATEGORIES, CATEGORY_COLOR_VARS, resolveCssVar, formatAmount } from "@/lib/categories";
 import { useExpenseEditor } from "./useExpenseEditor";
 import ExpenseTableRow from "./ExpenseTableRow";
 import AddExpenseForm from "./AddExpenseForm";
@@ -15,8 +15,10 @@ const MONTH_NAMES = [
   "July", "August", "September", "October", "November", "December",
 ];
 
-// Drill-down subcategory colors, also drawn only from the design palette.
-const FALLBACK_COLORS = ["#4A7C59", "#9EBA8B", "#5C4033", "#F4A261", "#E9C46A", "#8FACA3"];
+// Drill-down subcategories rotate through the theme's numbered swatches
+// rather than the named per-category tokens (which are reserved for the
+// top-level chart), so they still restyle correctly on a theme switch.
+const FALLBACK_COLOR_VARS = ["--cat-1", "--cat-2", "--cat-3", "--cat-4", "--cat-5", "--cat-6", "--cat-7", "--cat-8", "--cat-9"];
 
 // All date math below stays in local calendar components (getFullYear/getMonth/getDate,
 // or manual string parsing) rather than Date -> toISOString(), which converts to UTC and
@@ -102,12 +104,12 @@ function Dropdown({ label, children, open, onToggle }) {
     <div className="relative">
       <button
         onClick={onToggle}
-        className="text-sm font-medium text-forest-hunter hover:text-forest-deep flex items-center gap-1"
+        className="text-sm font-medium text-[var(--action)] hover:text-[var(--action-hover)] flex items-center gap-1"
       >
         {label} <span className="text-xs">▾</span>
       </button>
       {open && (
-        <div className="absolute right-0 mt-1 bg-stone-parchment border rounded-md shadow-lg z-10 min-w-[10rem] py-1 text-sm">
+        <div className="absolute right-0 mt-1 bg-[var(--surface)] border border-[var(--border)] rounded-md shadow-lg z-10 min-w-[10rem] py-1 text-sm">
           {children}
         </div>
       )}
@@ -119,7 +121,7 @@ function DropdownItem({ active, onClick, children }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left px-3 py-1.5 hover:bg-stone-linen ${active ? "font-semibold text-forest-hunter" : "text-bark-umber"}`}
+      className={`w-full text-left px-3 py-1.5 hover:bg-[var(--surface-alt)] ${active ? "font-semibold text-[var(--action)]" : "text-[var(--text)]"}`}
     >
       {children}
     </button>
@@ -152,6 +154,30 @@ export default function ExpenseCategoryCharts({
   const [sortOpen, setSortOpen] = useState(false);
   const [settingOpen, setSettingOpen] = useState(false);
   const [showManageSavings, setShowManageSavings] = useState(false);
+  const [theme, setTheme] = useState("ember");
+
+  useEffect(() => {
+    const root = document.documentElement;
+    setTheme(root.getAttribute("data-theme") || "ember");
+    const observer = new MutationObserver(() => setTheme(root.getAttribute("data-theme") || "ember"));
+    observer.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
+
+  // Recharts needs real color strings, not live `var(...)` references, so
+  // resolve each category's CSS custom property once per theme change. This
+  // has to run in an effect rather than during render: resolveCssVar reads
+  // `window`, so a render-time computation would bake the server's fallback
+  // color into the SSR markup, and a plain `<span style>` mismatch like that
+  // doesn't get corrected on hydration the way Recharts' client-only SVG does.
+  const [categoryColors, setCategoryColors] = useState({});
+  const [fallbackColors, setFallbackColors] = useState([]);
+
+  useEffect(() => {
+    const entries = TOP_LEVEL_CATEGORIES.map((name) => [name, resolveCssVar(CATEGORY_COLOR_VARS[name])]);
+    setCategoryColors(Object.fromEntries(entries));
+    setFallbackColors(FALLBACK_COLOR_VARS.map((v) => resolveCssVar(v)));
+  }, [theme]);
 
   const range = useMemo(() => {
     if (periodMode === "weekly") return weekRange();
@@ -217,10 +243,10 @@ export default function ExpenseCategoryCharts({
       <AddExpenseForm categoryOptions={categoryOptions} workspaces={workspaces} onAdd={addExpense} />
 
       <div className="grid md:grid-cols-[65fr_35fr] gap-6">
-        <div className="bg-stone-parchment rounded-lg border overflow-x-auto">
+        <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] overflow-x-auto">
           <table className="w-full text-sm min-w-[30rem]">
             <thead>
-              <tr className="bg-forest-deep text-stone-parchment text-left">
+              <tr className="bg-[var(--table-head-bg)] text-[var(--table-head-text)] text-left">
                 <th className="p-2 font-medium">Expense name</th>
                 <th className="p-2 font-medium">Category</th>
                 <th className="p-2 font-medium w-36">Date</th>
@@ -234,7 +260,7 @@ export default function ExpenseCategoryCharts({
                 const e = recentExpenses[i];
                 if (!e) {
                   return (
-                    <tr key={`empty-${i}`} className={i % 2 === 0 ? "bg-stone-linen" : "bg-stone-parchment"}>
+                    <tr key={`empty-${i}`} className={i % 2 === 0 ? "bg-[var(--surface-alt)]" : "bg-[var(--surface)]"}>
                       <td className="p-2">&nbsp;</td>
                       <td className="p-2"></td>
                       <td className="p-2"></td>
@@ -253,7 +279,7 @@ export default function ExpenseCategoryCharts({
                     onUpdate={updateExpense}
                     onUpdateCategory={updateCategory}
                     onDelete={deleteExpense}
-                    rowClassName={i % 2 === 0 ? "bg-stone-linen" : "bg-stone-parchment"}
+                    rowClassName={i % 2 === 0 ? "bg-[var(--surface-alt)]" : "bg-[var(--surface)]"}
                   />
                 );
               })}
@@ -261,9 +287,9 @@ export default function ExpenseCategoryCharts({
           </table>
         </div>
 
-        <div className="bg-stone-parchment rounded-lg border p-4">
+        <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4">
           <div className="flex items-start justify-between mb-2">
-            <h3 className="text-lg font-semibold text-forest-deep">
+            <h3 className="text-lg font-semibold text-[var(--action-hover)]">
               {selectedCategory ? `${selectedCategory} — ${periodLabel}` : periodLabel}
             </h3>
             <div className="flex items-center gap-4">
@@ -271,7 +297,7 @@ export default function ExpenseCategoryCharts({
                 <DropdownItem active={periodMode === "weekly"} onClick={() => { setPeriodMode("weekly"); setSortOpen(false); }}>
                   Weekly
                 </DropdownItem>
-                <div className="px-3 py-1.5 text-xs text-stone-grey uppercase">Monthly</div>
+                <div className="px-3 py-1.5 text-xs text-[var(--text-faint)] uppercase">Monthly</div>
                 {months.map((m) => (
                   <DropdownItem
                     key={`${m.year}-${m.month}`}
@@ -281,7 +307,7 @@ export default function ExpenseCategoryCharts({
                     {MONTH_NAMES[m.month]} {m.year}
                   </DropdownItem>
                 ))}
-                <div className="px-3 py-1.5 text-xs text-stone-grey uppercase">Annually</div>
+                <div className="px-3 py-1.5 text-xs text-[var(--text-faint)] uppercase">Annually</div>
                 {years.map((y) => (
                   <DropdownItem
                     key={y}
@@ -306,7 +332,7 @@ export default function ExpenseCategoryCharts({
                     {name}
                   </DropdownItem>
                 ))}
-                <div className="border-t my-1" />
+                <div className="border-t border-[var(--border)] my-1" />
                 <DropdownItem onClick={() => { setShowManageSavings((s) => !s); setSettingOpen(false); }}>
                   Manage Savings categories...
                 </DropdownItem>
@@ -315,16 +341,16 @@ export default function ExpenseCategoryCharts({
           </div>
 
           {chartData.length === 0 ? (
-            <p className="text-stone-taupe text-sm py-12 text-center">No categorized expenses in this range.</p>
+            <p className="text-[var(--text-muted)] text-sm py-12 text-center">No categorized expenses in this range.</p>
           ) : (
             <>
               <ResponsiveContainer width="100%" height={370}>
-                <PieChart>
+                <PieChart key={theme}>
                   <Pie data={chartData} dataKey="value" nameKey="name" outerRadius={132}>
                     {chartData.map((entry, i) => (
                       <Cell
                         key={entry.name}
-                        fill={selectedCategory ? FALLBACK_COLORS[i % FALLBACK_COLORS.length] : CATEGORY_COLORS[entry.name]}
+                        fill={selectedCategory ? fallbackColors[i % fallbackColors.length] : categoryColors[entry.name]}
                       />
                     ))}
                   </Pie>
@@ -340,8 +366,8 @@ export default function ExpenseCategoryCharts({
                       className="w-2.5 h-2.5 rounded-full inline-block"
                       style={{
                         background: selectedCategory
-                          ? FALLBACK_COLORS[chartData.findIndex((d) => d.name === entry.name) % FALLBACK_COLORS.length]
-                          : CATEGORY_COLORS[entry.name],
+                          ? fallbackColors[chartData.findIndex((d) => d.name === entry.name) % fallbackColors.length]
+                          : categoryColors[entry.name],
                       }}
                     />
                     {entry.name}
@@ -354,10 +380,10 @@ export default function ExpenseCategoryCharts({
       </div>
 
       {showManageSavings && (
-        <div className="bg-stone-parchment rounded-lg border p-4">
+        <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-medium">Savings categories</h3>
-            <button onClick={() => setShowManageSavings(false)} className="text-sm text-forest-hunter hover:underline">
+            <button onClick={() => setShowManageSavings(false)} className="text-sm text-[var(--action)] hover:underline">
               Close
             </button>
           </div>

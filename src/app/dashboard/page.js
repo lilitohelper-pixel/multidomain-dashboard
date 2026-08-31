@@ -44,9 +44,9 @@ export default async function TodayPage() {
         {tasks && tasks.length > 0 ? (
           <ul className="space-y-2">
             {tasks.map((t) => (
-              <li key={t.id} className="bg-stone-parchment rounded-lg border p-3 flex justify-between">
+              <li key={t.id} className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-3 flex justify-between">
                 <span>{t.task}</span>
-                <span className="text-sm text-stone-taupe">
+                <span className="text-sm text-[var(--text-muted)]">
                   {t.priority} · {workspaceLabel(t.workspaces)}
                   {creatorLabel(t, user.id) && ` · ${creatorLabel(t, user.id)}`}
                 </span>
@@ -54,7 +54,7 @@ export default async function TodayPage() {
             ))}
           </ul>
         ) : (
-          <p className="text-stone-taupe">Nothing due today.</p>
+          <p className="text-[var(--text-muted)]">Nothing due today.</p>
         )}
       </section>
 
@@ -63,9 +63,9 @@ export default async function TodayPage() {
         {events && events.length > 0 ? (
           <ul className="space-y-2">
             {events.map((e) => (
-              <li key={e.id} className="bg-stone-parchment rounded-lg border p-3 flex justify-between">
+              <li key={e.id} className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-3 flex justify-between">
                 <span>{e.title}</span>
-                <span className="text-sm text-stone-taupe">
+                <span className="text-sm text-[var(--text-muted)]">
                   {e.start_time || "All day"} · {workspaceLabel(e.workspaces)}
                   {creatorLabel(e, user.id) && ` · ${creatorLabel(e, user.id)}`}
                 </span>
@@ -73,13 +73,13 @@ export default async function TodayPage() {
             ))}
           </ul>
         ) : (
-          <p className="text-stone-taupe">No events today.</p>
+          <p className="text-[var(--text-muted)]">No events today.</p>
         )}
       </section>
 
       <section>
         <h2 className="text-lg font-medium mb-3">This month's net</h2>
-        <p className={`text-3xl font-semibold ${monthNet < 0 ? "text-amber-rust" : "text-forest-hunter"}`}>
+        <p className={`text-3xl font-semibold ${monthNet < 0 ? "text-[var(--holiday-text)]" : "text-[var(--positive)]"}`}>
           {formatSignedAmount(Math.abs(monthNet), monthNet >= 0)}
         </p>
       </section>

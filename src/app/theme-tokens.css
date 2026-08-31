@@ -1,0 +1,225 @@
+/* ------------------------------------------------------------------
+   Theme tokens for the dashboard.
+   Three schemes, switched by setting data-theme on <html>:
+     data-theme="ember"  -> Forest and ember
+     data-theme="sage"   -> Sage and ochre
+     data-theme="umber"  -> Umber and fern
+   Ember is also the fallback on :root, so the app still renders
+   correctly if JavaScript never runs.
+   ------------------------------------------------------------------ */
+
+:root,
+[data-theme="ember"] {
+  --nav-bg: #16281f;
+  --nav-text: #ede9d8;
+  --nav-muted: #9db0a7;
+
+  --page-bg: #f2f0e1;
+  --surface: #ffffff;
+  --surface-alt: #eef1ec;
+  --surface-sunken: #eef1ec;
+
+  --border: #d5d9ce;
+  --border-strong: #b4bcb0;
+
+  --text: #3a2e26;
+  --text-muted: #7c837e;
+  --text-faint: #a8a695;
+
+  --table-head-bg: #24422f;
+  --table-head-text: #ede9d8;
+
+  --action: #c0562a;
+  --action-hover: #a6461f;
+  --action-text: #fbefe3;
+  --positive: #2c5e43;
+
+  --day-weekend: #f6f5ef;
+  --today-bg: #fbebd1;
+  --today-text: #8a5a0e;
+  --holiday-bg: #f6dcc9;
+  --holiday-text: #a6461f;
+  --event-dot: #c0562a;
+
+  --pri-high-bg: #f6dcc9;
+  --pri-high-text: #a6461f;
+  --pri-med-bg: #fbebd1;
+  --pri-med-text: #8a5a0e;
+  --pri-low-bg: #eef1ec;
+  --pri-low-text: #24422f;
+  --pri-done-bg: #eef1ec;
+  --pri-done-text: #5a6b60;
+
+  --cat-1: #24422f;
+  --cat-2: #c0562a;
+  --cat-3: #e4a33a;
+  --cat-4: #7fa07a;
+  --cat-5: #9db0a7;
+  --cat-6: #c97a4e;
+  --cat-7: #b9a794;
+  --cat-8: #4a5d34;
+  --cat-9: #a79e96;
+
+  --swatch-a: #16281f;
+  --swatch-b: #c0562a;
+  --swatch-c: #e4a33a;
+}
+
+[data-theme="sage"] {
+  --nav-bg: #24422f;
+  --nav-text: #f5f2ea;
+  --nav-muted: #a9c39a;
+
+  --page-bg: #f5f2ea;
+  --surface: #ffffff;
+  --surface-alt: #edf1ee;
+  --surface-sunken: #edf1ee;
+
+  --border: #deddd3;
+  --border-strong: #c3c2b8;
+
+  --text: #3e4744;
+  --text-muted: #7c837e;
+  --text-faint: #afada4;
+
+  --table-head-bg: #5d7a6c;
+  --table-head-text: #f5f2ea;
+
+  --action: #d98e2b;
+  --action-hover: #b0700f;
+  --action-text: #41240a;
+  --positive: #3a6b52;
+
+  --day-weekend: #f7f6f1;
+  --today-bg: #fbebd1;
+  --today-text: #8a5a0e;
+  --holiday-bg: #efe0d2;
+  --holiday-text: #8a5f3c;
+  --event-dot: #d98e2b;
+
+  --pri-high-bg: #f3dacb;
+  --pri-high-text: #a6461f;
+  --pri-med-bg: #fbebd1;
+  --pri-med-text: #8a5a0e;
+  --pri-low-bg: #e4ede7;
+  --pri-low-text: #3f6252;
+  --pri-done-bg: #edf1ee;
+  --pri-done-text: #68736c;
+
+  --cat-1: #5d7a6c;
+  --cat-2: #d98e2b;
+  --cat-3: #9db0a7;
+  --cat-4: #c0562a;
+  --cat-5: #a9c39a;
+  --cat-6: #b9a794;
+  --cat-7: #24422f;
+  --cat-8: #e4a33a;
+  --cat-9: #a79e96;
+
+  --swatch-a: #24422f;
+  --swatch-b: #9db0a7;
+  --swatch-c: #d98e2b;
+}
+
+[data-theme="umber"] {
+  --nav-bg: #5a3520;
+  --nav-text: #f6efe3;
+  --nav-muted: #c9ae97;
+
+  --page-bg: #f6efe3;
+  --surface: #fffdf9;
+  --surface-alt: #f1e9dc;
+  --surface-sunken: #f1e9dc;
+
+  --border: #e3d6c2;
+  --border-strong: #c2b29c;
+
+  --text: #42301f;
+  --text-muted: #8a7259;
+  --text-faint: #b4a28c;
+
+  --table-head-bg: #4a5d34;
+  --table-head-text: #f6efe3;
+
+  --action: #2c5e43;
+  --action-hover: #24422f;
+  --action-text: #ede9d8;
+  --positive: #4a5d34;
+
+  --day-weekend: #f7f1e7;
+  --today-bg: #e4ede3;
+  --today-text: #2c5e43;
+  --holiday-bg: #f6dcc9;
+  --holiday-text: #a6461f;
+  --event-dot: #2c5e43;
+
+  --pri-high-bg: #f6dcc9;
+  --pri-high-text: #a6461f;
+  --pri-med-bg: #f7e7cc;
+  --pri-med-text: #8a5a0e;
+  --pri-low-bg: #e4ede3;
+  --pri-low-text: #2c5e43;
+  --pri-done-bg: #f1e9dc;
+  --pri-done-text: #8a7259;
+
+  --cat-1: #4a5d34;
+  --cat-2: #c0562a;
+  --cat-3: #e4a33a;
+  --cat-4: #7fa07a;
+  --cat-5: #9db0a7;
+  --cat-6: #b9a794;
+  --cat-7: #5a3520;
+  --cat-8: #c97a4e;
+  --cat-9: #a9c39a;
+
+  --swatch-a: #5a3520;
+  --swatch-b: #4a5d34;
+  --swatch-c: #c0562a;
+}
+
+/* Expense categories by name. These resolve against whichever theme is
+   active, so a category keeps its slot from month to month. */
+:root {
+  --cat-household: var(--cat-1);
+  --cat-food: var(--cat-2);
+  --cat-entertainment: var(--cat-3);
+  --cat-pet-care: var(--cat-4);
+  --cat-savings: var(--cat-5);
+  --cat-transportation: var(--cat-6);
+  --cat-travel: var(--cat-7);
+  --cat-clothing: var(--cat-8);
+  --cat-other: var(--cat-9);
+}
+
+/* Global application of the tokens. */
+html {
+  background: var(--page-bg);
+}
+
+body {
+  background: var(--page-bg);
+  color: var(--text);
+}
+
+/* Kills the default browser-blue checkboxes across every page. */
+input,
+select,
+textarea,
+button {
+  accent-color: var(--action);
+}
+
+:focus-visible {
+  outline: 2px solid var(--action);
+  outline-offset: 2px;
+}
+
+/* Optional transition when switching schemes. Remove if you prefer an
+   instant swap; it is skipped for anyone who asked for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  body,
+  body * {
+    transition: background-color 180ms ease, border-color 180ms ease,
+      color 180ms ease;
+  }
+}

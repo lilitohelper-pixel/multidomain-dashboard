@@ -190,13 +190,13 @@ export default function TasksTable({ tasks: initialTasks, currentUserId }) {
             <option key={o} value={o}>{o}</option>
           ))}
         </select>
-        <button onClick={() => setShowCustomize((s) => !s)} className="text-sm text-forest-hunter hover:underline ml-auto">
+        <button onClick={() => setShowCustomize((s) => !s)} className="text-sm text-[var(--action)] hover:underline ml-auto">
           {showCustomize ? "Done customizing" : "Customize columns"}
         </button>
       </div>
 
       {showCustomize && (
-        <div className="mb-4 bg-stone-parchment rounded-lg border p-4 space-y-2">
+        <div className="mb-4 bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4 space-y-2">
           <p className="text-sm font-medium mb-2">Columns (check to show, arrows to reorder)</p>
           {columnPrefs.map((c, i) => {
             const col = ALL_COLUMNS.find((col) => col.key === c.key);
@@ -222,19 +222,19 @@ export default function TasksTable({ tasks: initialTasks, currentUserId }) {
       )}
 
       {visibleTasks.length === 0 ? (
-        <p className="text-stone-taupe">
+        <p className="text-[var(--text-muted)]">
           {tasks.length === 0 ? "No tasks yet — send one to your bot on Telegram." : "No tasks match your filters."}
         </p>
       ) : (
-        <div className="bg-stone-parchment rounded-lg border overflow-x-auto">
+        <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b text-left text-stone-taupe">
+              <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)]">
                 <th className="p-3 w-8"></th>
                 {visibleColumns.map((col) => (
                   <th key={col.key} className="p-3 font-medium whitespace-nowrap">
                     {col.sortable ? (
-                      <button onClick={() => toggleSort(col.key)} className="flex items-center gap-1 hover:text-bark-umber">
+                      <button onClick={() => toggleSort(col.key)} className="flex items-center gap-1 hover:text-[var(--text)]">
                         {col.label}
                         {sortBy === col.key && <span>{sortDir === "asc" ? "▲" : "▼"}</span>}
                       </button>
@@ -248,7 +248,7 @@ export default function TasksTable({ tasks: initialTasks, currentUserId }) {
             </thead>
             <tbody>
               {visibleTasks.map((task) => (
-                <tr key={task.id} className="border-b last:border-0">
+                <tr key={task.id} className="border-b border-[var(--border)] last:border-0">
                   <td className="p-3">
                     <input
                       type="checkbox"
@@ -266,7 +266,7 @@ export default function TasksTable({ tasks: initialTasks, currentUserId }) {
                     <button
                       onClick={() => deleteTask(task)}
                       title="Delete task"
-                      className="text-stone-grey hover:text-amber-rust"
+                      className="text-[var(--text-faint)] hover:text-[var(--holiday-text)]"
                     >
                       🗑
                     </button>
@@ -290,8 +290,8 @@ function TaskCell({ columnKey, task, onUpdate, currentUserId }) {
         type="text"
         defaultValue={task.task}
         onBlur={(e) => e.target.value !== task.task && onUpdate(task.id, "task", e.target.value)}
-        className={`w-full min-w-[10rem] bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-1 ${
-          isDone ? "line-through text-stone-grey" : ""
+        className={`w-full min-w-[10rem] bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-1 ${
+          isDone ? "line-through text-[var(--text-faint)]" : ""
         }`}
       />
     );
@@ -305,15 +305,15 @@ function TaskCell({ columnKey, task, onUpdate, currentUserId }) {
         onBlur={(e) =>
           e.target.value !== (task.owner_name || "") && onUpdate(task.id, "owner_name", e.target.value || null)
         }
-        className="w-full min-w-[8rem] bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-1"
+        className="w-full min-w-[8rem] bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-1"
       />
     );
   }
   if (columnKey === "assigned_by") {
-    return <span className="text-stone-taupe whitespace-nowrap">{creatorLabel(task, currentUserId)}</span>;
+    return <span className="text-[var(--text-muted)] whitespace-nowrap">{creatorLabel(task, currentUserId)}</span>;
   }
   if (columnKey === "created_at") {
-    return <span className="text-stone-taupe whitespace-nowrap">{task.created_at.slice(0, 10)}</span>;
+    return <span className="text-[var(--text-muted)] whitespace-nowrap">{task.created_at.slice(0, 10)}</span>;
   }
   if (columnKey === "due_date") {
     return (
@@ -321,16 +321,24 @@ function TaskCell({ columnKey, task, onUpdate, currentUserId }) {
         type="date"
         defaultValue={task.due_date || ""}
         onChange={(e) => onUpdate(task.id, "due_date", e.target.value || null)}
-        className="bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-1"
+        className="bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-1"
       />
     );
   }
   if (columnKey === "priority") {
+    const priorityTextVar = isDone
+      ? "--pri-done-text"
+      : task.priority === "High"
+        ? "--pri-high-text"
+        : task.priority === "Low"
+          ? "--pri-low-text"
+          : "--pri-med-text";
     return (
       <select
         defaultValue={task.priority || "Medium"}
         onChange={(e) => onUpdate(task.id, "priority", e.target.value)}
-        className="bg-transparent border-none focus:ring-1 focus:ring-forest-juniper rounded px-1"
+        style={{ color: `var(${priorityTextVar})` }}
+        className="bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-1 font-medium"
       >
         {PRIORITY_OPTIONS.map((p) => (
           <option key={p} value={p}>
