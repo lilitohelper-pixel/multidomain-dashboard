@@ -365,6 +365,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
   const [draftEvent, setDraftEvent] = useState(null);
   const calendarRef = useRef(null);
   const containerRef = useRef(null);
+  const dateClickTimerRef = useRef(null);
 
   // dayCellDidMount below bakes resolved theme colors into inline styles at
   // mount time (FullCalendar's own CSS-var theming doesn't reach cells we
@@ -454,6 +455,8 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => () => clearTimeout(dateClickTimerRef.current), []);
+
   return (
     <div className="grid md:grid-cols-[440px_1fr] gap-6 items-start">
       <div className="space-y-4">
@@ -510,8 +513,26 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
               calendarRef.current?.getApi()?.scrollToTime(`${pad2(hh)}:${pad2(mm)}:00`);
             }}
             dateClick={(info) => {
-              const parts = dateTimeParts(info.date);
-              setDraftEvent({ start_date: parts.date, start_time: info.allDay ? null : parts.time });
+              // FullCalendar has no separate "double click" hook, so a single
+              // dateClick handler distinguishes them itself two ways: the
+              // native MouseEvent.detail is 2+ on the second click of a real
+              // double-click, and as a fallback, a second dateClick landing
+              // before the first one's queued timer elapses is treated as
+              // the same pair (covers input devices that don't report detail
+              // reliably). Either signal cancels the queued single-click
+              // action and opens the create-event popup instead.
+              const isDoubleClick = (info.jsEvent?.detail ?? 1) >= 2;
+              if (isDoubleClick || dateClickTimerRef.current) {
+                clearTimeout(dateClickTimerRef.current);
+                dateClickTimerRef.current = null;
+                const parts = dateTimeParts(info.date);
+                setDraftEvent({ start_date: parts.date, start_time: info.allDay ? null : parts.time });
+                return;
+              }
+              dateClickTimerRef.current = setTimeout(() => {
+                dateClickTimerRef.current = null;
+                calendarRef.current?.getApi()?.changeView("timeGridDay", info.date);
+              }, 250);
             }}
             eventClick={(info) => {
               if (!info.event.extendedProps.isHoliday) setEditingEventId(info.event.id);
