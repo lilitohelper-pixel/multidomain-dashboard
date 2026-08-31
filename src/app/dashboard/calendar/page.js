@@ -28,7 +28,7 @@ export default async function CalendarPage() {
     : [];
 
   return (
-    <div className="max-w-6xl">
+    <div>
       <h1 className="text-2xl font-semibold mb-6">Calendar</h1>
       <CalendarView
         events={events || []}

@@ -268,7 +268,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
   }, []);
 
   return (
-    <div className="grid md:grid-cols-[260px_1fr] gap-6 items-start">
+    <div className="grid md:grid-cols-[220px_1fr] gap-6 items-start">
       <div className="space-y-4">
         <DayCard label="Today" dateISO={todayDate} dayEvents={todayEvents} variant="today" onSelectDate={setSelectedDate} />
         <DayCard
@@ -281,6 +281,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
       </div>
 
       <div ref={containerRef}>
+      <div className="bg-stone-parchment rounded-lg border overflow-hidden p-4">
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin]}
@@ -289,7 +290,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
         headerToolbar={{
           left: "prev,next gotoToday",
           center: "title",
-          right: "multiMonthYear,dayGridMonth,timeGridWeek,timeGridDay",
+          right: "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear",
         }}
         buttonText={{
           multiMonthYear: "Year",
@@ -297,6 +298,8 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
           timeGridWeek: "Week",
           timeGridDay: "Day",
         }}
+        height={720}
+        dayMaxEventRows={3}
         customButtons={{
           // Named "gotoToday" rather than the reserved "today" — FullCalendar
           // auto-disables a button named "today" whenever the current view
@@ -354,8 +357,8 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
             top.insertBefore(label, top.firstChild);
           }
         }}
-        height="auto"
       />
+      </div>
 
       {selectedDate && (
         <div className="mt-4 bg-stone-parchment rounded-lg border p-4">
