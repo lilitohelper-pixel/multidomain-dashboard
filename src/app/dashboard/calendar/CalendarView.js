@@ -5,6 +5,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import multiMonthPlugin from "@fullcalendar/multimonth";
+import interactionPlugin from "@fullcalendar/interaction";
 import { workspaceLabel, creatorLabel } from "@/lib/displayNames";
 
 function toFullCalendarEvent(row) {
@@ -35,7 +36,7 @@ function toHolidayEvent(holiday, index) {
 }
 
 export default function CalendarView({ events, holidays = [], currentUserId }) {
-  const [selected, setSelected] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
   const calendarRef = useRef(null);
   const containerRef = useRef(null);
   const fcEvents = [...events.map(toFullCalendarEvent), ...holidays.map(toHolidayEvent)];
@@ -59,7 +60,7 @@ export default function CalendarView({ events, holidays = [], currentUserId }) {
     <div ref={containerRef}>
       <FullCalendar
         ref={calendarRef}
-        plugins={[dayGridPlugin, timeGridPlugin, multiMonthPlugin]}
+        plugins={[dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin]}
         initialView="dayGridMonth"
         firstDay={1}
         headerToolbar={{
@@ -75,30 +76,44 @@ export default function CalendarView({ events, holidays = [], currentUserId }) {
           today: "Today",
         }}
         events={fcEvents}
+        dateClick={(info) => setSelectedDate(info.dateStr.slice(0, 10))}
         eventClick={(info) => {
           if (info.event.extendedProps.isHoliday) return;
-          const row = events.find((e) => e.id === info.event.id);
-          setSelected(row);
+          setSelectedDate(info.event.startStr.slice(0, 10));
         }}
         height="auto"
       />
 
-      {selected && (
-        <div className="mt-4 bg-stone-parchment rounded-lg border p-4 flex items-start justify-between">
-          <div>
-            <p className="font-medium">{selected.title}</p>
-            <p className="text-sm text-stone-taupe">
-              {selected.start_date}
-              {selected.start_time ? ` ${selected.start_time.slice(0, 5)}` : " (all day)"}
-              {selected.location ? ` · ${selected.location}` : ""}
-              {" · "}
-              {workspaceLabel(selected.workspaces)}
-              {creatorLabel(selected, currentUserId) && ` · Added by ${creatorLabel(selected, currentUserId)}`}
-            </p>
+      {selectedDate && (
+        <div className="mt-4 bg-stone-parchment rounded-lg border p-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="font-medium">{selectedDate}</p>
+            <button onClick={() => setSelectedDate(null)} className="text-stone-grey hover:text-bark-umber">
+              ✕
+            </button>
           </div>
-          <button onClick={() => setSelected(null)} className="text-stone-grey hover:text-bark-umber">
-            ✕
-          </button>
+          {(() => {
+            const dayEvents = events.filter((e) => e.start_date === selectedDate);
+            if (dayEvents.length === 0) {
+              return <p className="text-sm text-stone-taupe">No events on this day.</p>;
+            }
+            return (
+              <ul className="space-y-2">
+                {dayEvents.map((e) => (
+                  <li key={e.id} className="flex items-center justify-between gap-4">
+                    <span>{e.title}</span>
+                    <span className="text-sm text-stone-taupe whitespace-nowrap">
+                      {e.start_time ? e.start_time.slice(0, 5) : "All day"}
+                      {e.location ? ` · ${e.location}` : ""}
+                      {" · "}
+                      {workspaceLabel(e.workspaces)}
+                      {creatorLabel(e, currentUserId) && ` · Added by ${creatorLabel(e, currentUserId)}`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            );
+          })()}
         </div>
       )}
     </div>
