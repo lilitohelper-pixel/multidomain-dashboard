@@ -249,6 +249,15 @@ export default function ExpenseCategoryCharts({
 
   return (
     <section className="space-y-4">
+      <div className="flex justify-end">
+        <button
+          onClick={() => setShowManageSavings((s) => !s)}
+          className="text-sm bg-[var(--surface)] border border-[var(--border)] text-[var(--action)] px-3 py-1.5 rounded-md hover:bg-[var(--surface-alt)]"
+        >
+          + {t(lang, "categories_add_button_header")}
+        </button>
+      </div>
+
       <AddExpenseForm
         categoryOptions={categoryOptions}
         workspaces={workspaces}
