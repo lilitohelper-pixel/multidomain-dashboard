@@ -6,7 +6,7 @@ import { topLevelCategory, secondLevelCategory, TOP_LEVEL_CATEGORIES, CATEGORY_C
 import { useExpenseEditor } from "./useExpenseEditor";
 import ExpenseTableRow from "./ExpenseTableRow";
 import AddExpenseForm from "./AddExpenseForm";
-import SavingsCategoriesManager from "./SavingsCategoriesManager";
+import CategoriesManager from "./CategoriesManager";
 import { t, monthNames, translateCategoryName } from "@/lib/i18n";
 
 // Chart data keys stay in English (matched against CATEGORY_COLOR_VARS and
@@ -137,8 +137,8 @@ export default function ExpenseCategoryCharts({
   expenses: initialExpenses,
   categories,
   workspaces,
-  savingsParentId,
-  initialCustomSavings,
+  topLevelCategories,
+  initialCustomCategories,
   currentUserId,
   lang = "en",
 }) {
@@ -399,10 +399,10 @@ export default function ExpenseCategoryCharts({
               {t(lang, "expenses_close")}
             </button>
           </div>
-          <SavingsCategoriesManager
-            initialCategories={initialCustomSavings}
+          <CategoriesManager
+            initialCategories={initialCustomCategories}
+            topLevelCategories={topLevelCategories}
             workspaces={workspaces}
-            savingsParentId={savingsParentId}
             lang={lang}
           />
         </div>

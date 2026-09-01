@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { workspaceLabel } from "@/lib/displayNames";
-import { t } from "@/lib/i18n";
+import { t, translateCategoryName } from "@/lib/i18n";
 
-export default function SavingsCategoriesManager({ initialCategories, workspaces, savingsParentId, lang = "en" }) {
+export default function CategoriesManager({ initialCategories, topLevelCategories, workspaces, lang = "en" }) {
   const supabase = createClient();
   const [categories, setCategories] = useState(initialCategories);
   const [name, setName] = useState("");
+  const [parentId, setParentId] = useState(topLevelCategories[0]?.id || "");
   const [workspaceId, setWorkspaceId] = useState(workspaces[0]?.id || "");
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -16,14 +17,14 @@ export default function SavingsCategoriesManager({ initialCategories, workspaces
   async function addCategory(e) {
     e.preventDefault();
     const trimmed = name.trim();
-    if (!trimmed || !workspaceId || !savingsParentId) return;
+    if (!trimmed || !workspaceId || !parentId) return;
 
     setSaving(true);
     setErrorMsg("");
     const { data, error } = await supabase
       .from("expense_categories")
-      .insert({ workspace_id: workspaceId, parent_id: savingsParentId, name: trimmed, level: 2, is_system: false })
-      .select("id, workspace_id, name, workspaces(name, is_personal)")
+      .insert({ workspace_id: workspaceId, parent_id: parentId, name: trimmed, level: 2, is_system: false })
+      .select("id, workspace_id, parent_id, name, workspaces(name, is_personal)")
       .single();
     setSaving(false);
 
@@ -51,18 +52,34 @@ export default function SavingsCategoriesManager({ initialCategories, workspaces
     }
   }
 
+  const parentNameById = Object.fromEntries(topLevelCategories.map((c) => [c.id, c.name]));
+
   return (
     <div className="space-y-4">
       <form onSubmit={addCategory} className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4 flex flex-wrap items-end gap-3">
         <div className="flex-1 min-w-[10rem]">
-          <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "savings_new_goal_label")}</label>
+          <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "categories_new_label")}</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={t(lang, "savings_new_goal_placeholder")}
+            placeholder={t(lang, "categories_new_placeholder")}
             className="w-full border rounded-md px-3 py-1.5 text-sm"
           />
+        </div>
+        <div>
+          <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "categories_parent_label")}</label>
+          <select
+            value={parentId}
+            onChange={(e) => setParentId(e.target.value)}
+            className="border rounded-md px-2 py-1.5 text-sm"
+          >
+            {topLevelCategories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {translateCategoryName(lang, c.name)}
+              </option>
+            ))}
+          </select>
         </div>
         {workspaces.length > 1 && (
           <div>
@@ -82,7 +99,7 @@ export default function SavingsCategoriesManager({ initialCategories, workspaces
         )}
         <button
           type="submit"
-          disabled={saving || !name.trim() || !workspaceId}
+          disabled={saving || !name.trim() || !workspaceId || !parentId}
           className="bg-[var(--action)] text-[var(--action-text)] text-sm px-4 py-1.5 rounded-md disabled:opacity-50"
         >
           {saving ? t(lang, "expenses_adding") : t(lang, "savings_add_button")}
@@ -91,12 +108,13 @@ export default function SavingsCategoriesManager({ initialCategories, workspaces
       {errorMsg && <p className="text-sm text-[var(--holiday-text)]">{errorMsg}</p>}
 
       {categories.length === 0 ? (
-        <p className="text-[var(--text-muted)]">{t(lang, "savings_empty")}</p>
+        <p className="text-[var(--text-muted)]">{t(lang, "categories_empty")}</p>
       ) : (
         <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] divide-y divide-[var(--border)]">
           {categories.map((c) => (
             <div key={c.id} className="p-3 flex items-center justify-between">
               <div>
+                <span className="text-[var(--text-muted)]">{translateCategoryName(lang, parentNameById[c.parent_id] || "")}: </span>
                 <span>{c.name}</span>
                 {workspaces.length > 1 && (
                   <span className="text-sm text-[var(--text-muted)] ml-2">{workspaceLabel(c.workspaces)}</span>

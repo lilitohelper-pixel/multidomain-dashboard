@@ -9,26 +9,16 @@ export default async function ExpensesPage() {
     data: { user },
   } = await supabase.auth.getUser();
   const lang = await getUserLanguage(supabase, user.id);
-  const { data: savingsParent } = await supabase
-    .from("expense_categories")
-    .select("id")
-    .is("workspace_id", null)
-    .is("parent_id", null)
-    .eq("name", "Savings")
-    .maybeSingle();
 
-  const [{ data: expenses }, { data: categories }, { data: workspaces }, { data: customSavings }] = await Promise.all([
+  const [{ data: expenses }, { data: categories }, { data: workspaces }] = await Promise.all([
     supabase.from("expenses").select("*, workspaces(name, is_personal)").order("date", { ascending: false }),
-    supabase.from("expense_categories").select("id, parent_id, name"),
+    supabase.from("expense_categories").select("id, parent_id, name, workspace_id, workspaces(name, is_personal)"),
     supabase.from("workspaces").select("id, name, is_personal"),
-    savingsParent
-      ? supabase
-          .from("expense_categories")
-          .select("id, workspace_id, name, workspaces(name, is_personal)")
-          .eq("parent_id", savingsParent.id)
-          .not("workspace_id", "is", null)
-      : Promise.resolve({ data: [] }),
   ]);
+
+  const allCategories = categories || [];
+  const topLevelCategories = allCategories.filter((c) => c.parent_id === null).map((c) => ({ id: c.id, name: c.name }));
+  const customCategories = allCategories.filter((c) => c.workspace_id !== null);
 
   return (
     <div className="space-y-8">
@@ -36,17 +26,17 @@ export default async function ExpensesPage() {
 
       <ExpenseCategoryCharts
         expenses={expenses || []}
-        categories={categories || []}
+        categories={allCategories}
         workspaces={workspaces || []}
-        savingsParentId={savingsParent?.id || null}
-        initialCustomSavings={customSavings || []}
+        topLevelCategories={topLevelCategories}
+        initialCustomCategories={customCategories}
         currentUserId={user.id}
         lang={lang}
       />
 
       <section>
         <h2 className="text-lg font-medium mb-3">{t(lang, "expenses_all_heading")}</h2>
-        <AllExpensesTable expenses={expenses || []} categories={categories || []} lang={lang} />
+        <AllExpensesTable expenses={expenses || []} categories={allCategories} lang={lang} />
       </section>
     </div>
   );
