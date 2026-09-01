@@ -4,11 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { buildCategoryIndex, categoryPathLabel } from "@/lib/categories";
+import { translateCategoryName } from "@/lib/i18n";
 
 // Shared editing logic for both the "recent expenses" preview table and the
 // full paginated "All expenses" table, so an edit made in either place uses
 // the same update/refresh behavior instead of two separate implementations.
-export function useExpenseEditor(initialExpenses, categories, currentUserId) {
+export function useExpenseEditor(initialExpenses, categories, currentUserId, lang = "en") {
   const router = useRouter();
   const supabase = createClient();
   const byId = useMemo(() => buildCategoryIndex(categories), [categories]);
@@ -18,11 +19,13 @@ export function useExpenseEditor(initialExpenses, categories, currentUserId) {
   // Every category is selectable, including Income — a controlled <select>
   // whose current value has no matching <option> silently falls back to
   // showing the first option instead, which looks like a wrong category.
+  // Sorted/labeled with the translated name for display only — the value
+  // saved to the database (below) always stays the canonical English path.
   const categoryOptions = useMemo(() => {
     return categories
-      .map((c) => ({ id: c.id, label: categoryPathLabel(byId, c.id) }))
+      .map((c) => ({ id: c.id, label: categoryPathLabel(byId, c.id, (n) => translateCategoryName(lang, n)) }))
       .sort((a, b) => a.label.localeCompare(b.label));
-  }, [categories, byId]);
+  }, [categories, byId, lang]);
 
   async function updateExpense(id, changes) {
     setExpenses((prev) => prev.map((e) => (e.id === id ? { ...e, ...changes } : e)));

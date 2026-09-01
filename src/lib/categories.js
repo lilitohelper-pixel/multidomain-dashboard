@@ -31,11 +31,15 @@ export function isIncomeCategory(byId, id) {
   return topLevelCategory(byId, id)?.name === "Income";
 }
 
-export function categoryPathLabel(byId, id) {
+// `translateName` only affects the returned display string — callers that
+// persist this value (the denormalized `expenses.category` snapshot) must
+// call this without it, so what's saved always stays the canonical English
+// path regardless of which language was active when the edit was made.
+export function categoryPathLabel(byId, id, translateName = (n) => n) {
   const parts = [];
   let cur = byId.get(id);
   while (cur) {
-    parts.unshift(cur.name);
+    parts.unshift(translateName(cur.name));
     cur = cur.parent_id ? byId.get(cur.parent_id) : null;
   }
   return parts.join(" → ");

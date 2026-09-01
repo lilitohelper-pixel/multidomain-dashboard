@@ -57,6 +57,7 @@ function sortValue(task, key, currentUserId) {
 export default function TasksTable({ tasks: initialTasks, currentUserId, lang = "en" }) {
   const supabase = createClient();
   const [tasks, setTasks] = useState(initialTasks);
+  useEffect(() => setTasks(initialTasks), [initialTasks]);
   const [columnPrefs, setColumnPrefs] = useState(defaultColumnPrefs);
   const [showCustomize, setShowCustomize] = useState(false);
   const [hydrated, setHydrated] = useState(false);

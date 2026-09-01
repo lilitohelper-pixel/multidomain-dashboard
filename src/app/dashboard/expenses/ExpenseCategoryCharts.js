@@ -7,7 +7,16 @@ import { useExpenseEditor } from "./useExpenseEditor";
 import ExpenseTableRow from "./ExpenseTableRow";
 import AddExpenseForm from "./AddExpenseForm";
 import SavingsCategoriesManager from "./SavingsCategoriesManager";
-import { t, monthNames } from "@/lib/i18n";
+import { t, monthNames, translateCategoryName } from "@/lib/i18n";
+
+// Chart data keys stay in English (matched against CATEGORY_COLOR_VARS and
+// used for grouping), so translation only ever happens where a name is
+// actually rendered as text — this wraps translateCategoryName to also
+// handle the two synthetic drill-down labels that aren't real category names.
+function displayCategoryName(lang, name) {
+  if (name === "Uncategorized") return t(lang, "expenses_uncategorized");
+  return translateCategoryName(lang, name);
+}
 
 const VISIBLE_ROWS = 10;
 
@@ -136,7 +145,8 @@ export default function ExpenseCategoryCharts({
   const { expenses, byId, categoryOptions, updateExpense, updateCategory, deleteExpense, addExpense } = useExpenseEditor(
     initialExpenses,
     categories,
-    currentUserId
+    currentUserId,
+    lang
   );
   const MONTH_NAMES = useMemo(() => monthNames(lang), [lang]);
 
@@ -289,7 +299,7 @@ export default function ExpenseCategoryCharts({
         <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4">
           <div className="flex items-start justify-between mb-2">
             <h3 className="text-lg font-semibold text-[var(--action-hover)]">
-              {selectedCategory ? `${selectedCategory} — ${periodLabel}` : periodLabel}
+              {selectedCategory ? `${displayCategoryName(lang, selectedCategory)} — ${periodLabel}` : periodLabel}
             </h3>
             <div className="flex items-center gap-4">
               <Dropdown label={t(lang, "expenses_sort")} open={sortOpen} onToggle={() => { setSortOpen((o) => !o); setSettingOpen(false); }}>
@@ -328,7 +338,7 @@ export default function ExpenseCategoryCharts({
                     active={selectedCategory === name}
                     onClick={() => { setSelectedCategory(name); setSettingOpen(false); }}
                   >
-                    {name}
+                    {translateCategoryName(lang, name)}
                   </DropdownItem>
                 ))}
                 <div className="border-t border-[var(--border)] my-1" />
@@ -354,7 +364,10 @@ export default function ExpenseCategoryCharts({
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value, name) => [`${formatAmount(value)} (${((value / chartTotal) * 100).toFixed(0)}%)`, name]}
+                    formatter={(value, name) => [
+                      `${formatAmount(value)} (${((value / chartTotal) * 100).toFixed(0)}%)`,
+                      displayCategoryName(lang, name),
+                    ]}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -369,7 +382,7 @@ export default function ExpenseCategoryCharts({
                           : categoryColors[entry.name],
                       }}
                     />
-                    {entry.name}
+                    {displayCategoryName(lang, entry.name)}
                   </span>
                 ))}
               </div>

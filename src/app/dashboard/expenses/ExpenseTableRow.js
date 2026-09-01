@@ -1,10 +1,12 @@
 "use client";
 
 import { isIncomeCategory, categoryPathLabel, formatAmount } from "@/lib/categories";
-import { t } from "@/lib/i18n";
+import { t, translateCategoryName } from "@/lib/i18n";
 
 export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onUpdate, onUpdateCategory, onDelete, rowClassName, lang = "en" }) {
-  const currentLabel = e.category_id ? categoryPathLabel(byId, e.category_id) : e.category || t(lang, "expenses_uncategorized");
+  const currentLabel = e.category_id
+    ? categoryPathLabel(byId, e.category_id, (n) => translateCategoryName(lang, n))
+    : e.category || t(lang, "expenses_uncategorized");
 
   return (
     <tr className={rowClassName}>

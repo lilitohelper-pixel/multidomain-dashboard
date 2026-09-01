@@ -24,7 +24,9 @@ function pageNumbers(current, total) {
 export default function AllExpensesTable({ expenses: initialExpenses, categories, lang = "en" }) {
   const { expenses, byId, categoryOptions, updateExpense, updateCategory, deleteExpense } = useExpenseEditor(
     initialExpenses,
-    categories
+    categories,
+    undefined,
+    lang
   );
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
