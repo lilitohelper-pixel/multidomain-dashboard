@@ -7,13 +7,9 @@ import { useExpenseEditor } from "./useExpenseEditor";
 import ExpenseTableRow from "./ExpenseTableRow";
 import AddExpenseForm from "./AddExpenseForm";
 import SavingsCategoriesManager from "./SavingsCategoriesManager";
+import { t, monthNames } from "@/lib/i18n";
 
 const VISIBLE_ROWS = 10;
-
-const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
 
 // Drill-down subcategories rotate through the theme's numbered swatches
 // rather than the named per-category tokens (which are reserved for the
@@ -61,9 +57,9 @@ function yearRange(year) {
   return { start: `${year}-01-01`, end: `${year}-12-31` };
 }
 
-function formatShortDate(iso) {
+function formatShortDate(iso, monthNamesArr) {
   const { month0, day } = parseYMD(iso);
-  return `${MONTH_NAMES[month0].slice(0, 3)} ${day}`;
+  return `${monthNamesArr[month0].slice(0, 3)} ${day}`;
 }
 
 function earliestDate(expenses) {
@@ -135,12 +131,14 @@ export default function ExpenseCategoryCharts({
   savingsParentId,
   initialCustomSavings,
   currentUserId,
+  lang = "en",
 }) {
   const { expenses, byId, categoryOptions, updateExpense, updateCategory, deleteExpense, addExpense } = useExpenseEditor(
     initialExpenses,
     categories,
     currentUserId
   );
+  const MONTH_NAMES = useMemo(() => monthNames(lang), [lang]);
 
   const earliestISO = useMemo(() => earliestDate(expenses), [expenses]);
   const months = useMemo(() => listMonthsSince(earliestISO), [earliestISO]);
@@ -187,11 +185,11 @@ export default function ExpenseCategoryCharts({
 
   const periodLabel = useMemo(() => {
     if (periodMode === "weekly") {
-      return `Week of ${formatShortDate(range.start)} – ${formatShortDate(range.end)}, ${parseYMD(range.end).year}`;
+      return `${t(lang, "expenses_week_of")} ${formatShortDate(range.start, MONTH_NAMES)} – ${formatShortDate(range.end, MONTH_NAMES)}, ${parseYMD(range.end).year}`;
     }
     if (periodMode === "annual") return `${selectedYear}`;
     return `${MONTH_NAMES[selectedMonth.month]} ${selectedMonth.year}`;
-  }, [periodMode, range, selectedMonth, selectedYear]);
+  }, [periodMode, range, selectedMonth, selectedYear, MONTH_NAMES, lang]);
 
   // Category is not required here — an expense with no category_id (an old
   // row from before this feature, or one Claude couldn't confidently place)
@@ -240,18 +238,18 @@ export default function ExpenseCategoryCharts({
 
   return (
     <section className="space-y-4">
-      <AddExpenseForm categoryOptions={categoryOptions} workspaces={workspaces} onAdd={addExpense} />
+      <AddExpenseForm categoryOptions={categoryOptions} workspaces={workspaces} onAdd={addExpense} lang={lang} />
 
       <div className="grid md:grid-cols-[65fr_35fr] gap-6">
         <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] overflow-x-auto">
           <table className="w-full text-sm min-w-[30rem]">
             <thead>
               <tr className="bg-[var(--table-head-bg)] text-[var(--table-head-text)] text-left">
-                <th className="p-2 font-medium">Expense name</th>
-                <th className="p-2 font-medium">Category</th>
-                <th className="p-2 font-medium w-36">Date</th>
-                <th className="p-2 font-medium w-28">Amount</th>
-                <th className="p-2 font-medium w-14">Currency</th>
+                <th className="p-2 font-medium">{t(lang, "expenses_col_name")}</th>
+                <th className="p-2 font-medium">{t(lang, "expenses_col_category")}</th>
+                <th className="p-2 font-medium w-36">{t(lang, "expenses_col_date")}</th>
+                <th className="p-2 font-medium w-28">{t(lang, "expenses_col_amount")}</th>
+                <th className="p-2 font-medium w-14">{t(lang, "expenses_col_currency")}</th>
                 <th className="p-2 font-medium w-14"></th>
               </tr>
             </thead>
@@ -280,6 +278,7 @@ export default function ExpenseCategoryCharts({
                     onUpdateCategory={updateCategory}
                     onDelete={deleteExpense}
                     rowClassName={i % 2 === 0 ? "bg-[var(--surface-alt)]" : "bg-[var(--surface)]"}
+                    lang={lang}
                   />
                 );
               })}
@@ -293,11 +292,11 @@ export default function ExpenseCategoryCharts({
               {selectedCategory ? `${selectedCategory} — ${periodLabel}` : periodLabel}
             </h3>
             <div className="flex items-center gap-4">
-              <Dropdown label="Sort" open={sortOpen} onToggle={() => { setSortOpen((o) => !o); setSettingOpen(false); }}>
+              <Dropdown label={t(lang, "expenses_sort")} open={sortOpen} onToggle={() => { setSortOpen((o) => !o); setSettingOpen(false); }}>
                 <DropdownItem active={periodMode === "weekly"} onClick={() => { setPeriodMode("weekly"); setSortOpen(false); }}>
-                  Weekly
+                  {t(lang, "expenses_weekly")}
                 </DropdownItem>
-                <div className="px-3 py-1.5 text-xs text-[var(--text-faint)] uppercase">Monthly</div>
+                <div className="px-3 py-1.5 text-xs text-[var(--text-faint)] uppercase">{t(lang, "expenses_monthly")}</div>
                 {months.map((m) => (
                   <DropdownItem
                     key={`${m.year}-${m.month}`}
@@ -307,7 +306,7 @@ export default function ExpenseCategoryCharts({
                     {MONTH_NAMES[m.month]} {m.year}
                   </DropdownItem>
                 ))}
-                <div className="px-3 py-1.5 text-xs text-[var(--text-faint)] uppercase">Annually</div>
+                <div className="px-3 py-1.5 text-xs text-[var(--text-faint)] uppercase">{t(lang, "expenses_annually")}</div>
                 {years.map((y) => (
                   <DropdownItem
                     key={y}
@@ -319,9 +318,9 @@ export default function ExpenseCategoryCharts({
                 ))}
               </Dropdown>
 
-              <Dropdown label="Setting" open={settingOpen} onToggle={() => { setSettingOpen((o) => !o); setSortOpen(false); }}>
+              <Dropdown label={t(lang, "expenses_setting")} open={settingOpen} onToggle={() => { setSettingOpen((o) => !o); setSortOpen(false); }}>
                 <DropdownItem active={!selectedCategory} onClick={() => { setSelectedCategory(null); setSettingOpen(false); }}>
-                  All categories
+                  {t(lang, "expenses_all_categories")}
                 </DropdownItem>
                 {TOP_LEVEL_CATEGORIES.map((name) => (
                   <DropdownItem
@@ -334,14 +333,14 @@ export default function ExpenseCategoryCharts({
                 ))}
                 <div className="border-t border-[var(--border)] my-1" />
                 <DropdownItem onClick={() => { setShowManageSavings((s) => !s); setSettingOpen(false); }}>
-                  Manage Savings categories...
+                  {t(lang, "expenses_manage_savings")}
                 </DropdownItem>
               </Dropdown>
             </div>
           </div>
 
           {chartData.length === 0 ? (
-            <p className="text-[var(--text-muted)] text-sm py-12 text-center">No categorized expenses in this range.</p>
+            <p className="text-[var(--text-muted)] text-sm py-12 text-center">{t(lang, "expenses_no_data_in_range")}</p>
           ) : (
             <>
               <ResponsiveContainer width="100%" height={370}>
@@ -382,15 +381,16 @@ export default function ExpenseCategoryCharts({
       {showManageSavings && (
         <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-medium">Savings categories</h3>
+            <h3 className="font-medium">{t(lang, "expenses_manage_savings")}</h3>
             <button onClick={() => setShowManageSavings(false)} className="text-sm text-[var(--action)] hover:underline">
-              Close
+              {t(lang, "expenses_close")}
             </button>
           </div>
           <SavingsCategoriesManager
             initialCategories={initialCustomSavings}
             workspaces={workspaces}
             savingsParentId={savingsParentId}
+            lang={lang}
           />
         </div>
       )}

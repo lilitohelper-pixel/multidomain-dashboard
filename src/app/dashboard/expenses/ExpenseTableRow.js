@@ -1,9 +1,10 @@
 "use client";
 
 import { isIncomeCategory, categoryPathLabel, formatAmount } from "@/lib/categories";
+import { t } from "@/lib/i18n";
 
-export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onUpdate, onUpdateCategory, onDelete, rowClassName }) {
-  const currentLabel = e.category_id ? categoryPathLabel(byId, e.category_id) : e.category || "Uncategorized";
+export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onUpdate, onUpdateCategory, onDelete, rowClassName, lang = "en" }) {
+  const currentLabel = e.category_id ? categoryPathLabel(byId, e.category_id) : e.category || t(lang, "expenses_uncategorized");
 
   return (
     <tr className={rowClassName}>
@@ -24,7 +25,7 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
           title={currentLabel}
           className="w-full max-w-[19.25rem] truncate bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-2 py-1 text-sm"
         >
-          {!e.category_id && <option value="">{e.category || "Uncategorized"}</option>}
+          {!e.category_id && <option value="">{e.category || t(lang, "expenses_uncategorized")}</option>}
           {categoryOptions.map((opt) => (
             <option key={opt.id} value={opt.id}>
               {opt.label}
@@ -69,9 +70,9 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
       <td className="p-1 w-14 text-center">
         <button
           onClick={() => {
-            if (window.confirm(`Delete "${e.description || "this expense"}"? This can't be undone.`)) onDelete(e.id);
+            if (window.confirm(t(lang, "expenses_delete_confirm", { name: e.description || t(lang, "expenses_title") }))) onDelete(e.id);
           }}
-          title="Delete expense"
+          title={t(lang, "expenses_delete_title")}
           className="text-[var(--text-faint)] hover:text-[var(--holiday-text)]"
         >
           🗑

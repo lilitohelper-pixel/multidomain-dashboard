@@ -7,8 +7,18 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import interactionPlugin from "@fullcalendar/interaction";
+import huLocale from "@fullcalendar/core/locales/hu";
+import ruLocale from "@fullcalendar/core/locales/ru";
 import { createClient } from "@/lib/supabase/client";
 import { workspaceLabel } from "@/lib/displayNames";
+import { t } from "@/lib/i18n";
+
+const FC_LOCALES = { hu: huLocale, ru: ruLocale };
+const WEEKDAY_SHORT_BY_LANG = {
+  en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  hu: ["V", "H", "K", "Sze", "Cs", "P", "Szo"],
+  ru: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+};
 
 function pad2(n) {
   return String(n).padStart(2, "0");
@@ -33,10 +43,10 @@ function parseYMD(iso) {
   return { year, month0: month - 1, day };
 }
 
-const WEEKDAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-function weekdayShort(dateISO) {
+function weekdayShort(dateISO, lang) {
   const { year, month0, day } = parseYMD(dateISO);
-  return WEEKDAY_SHORT[new Date(year, month0, day).getDay()];
+  const names = WEEKDAY_SHORT_BY_LANG[lang] || WEEKDAY_SHORT_BY_LANG.en;
+  return names[new Date(year, month0, day).getDay()];
 }
 
 // Sunday of the current week (weeks run Monday-Sunday, matching firstDay={1}
@@ -75,7 +85,7 @@ function toFullCalendarEvent(row) {
   };
 }
 
-function DayCard({ label, dayEvents, variant, onSelectEvent, showWeekday }) {
+function DayCard({ label, dayEvents, variant, onSelectEvent, showWeekday, lang }) {
   const isToday = variant === "today";
   return (
     <div
@@ -89,7 +99,7 @@ function DayCard({ label, dayEvents, variant, onSelectEvent, showWeekday }) {
       <h3 className="text-lg font-semibold">{label}</h3>
       {dayEvents.length === 0 ? (
         <p className="text-sm" style={{ color: isToday ? "var(--nav-muted)" : "var(--text-muted)" }}>
-          No events.
+          {t(lang, "calendar_no_events")}
         </p>
       ) : (
         <ul className="space-y-2">
@@ -103,8 +113,8 @@ function DayCard({ label, dayEvents, variant, onSelectEvent, showWeekday }) {
               >
                 <span className="truncate">{e.title}</span>
                 <span className="whitespace-nowrap font-medium">
-                  {showWeekday ? `${weekdayShort(e.start_date)} ` : ""}
-                  {e.start_time ? e.start_time.slice(0, 5) : "All day"}
+                  {showWeekday ? `${weekdayShort(e.start_date, lang)} ` : ""}
+                  {e.start_time ? e.start_time.slice(0, 5) : t(lang, "calendar_all_day_toggle")}
                 </span>
               </button>
             </li>
@@ -115,15 +125,15 @@ function DayCard({ label, dayEvents, variant, onSelectEvent, showWeekday }) {
   );
 }
 
-function GuestList({ eventId, guests, onAdd, onRemove }) {
+function GuestList({ eventId, guests, onAdd, onRemove, lang }) {
   const [email, setEmail] = useState("");
   const eventGuests = guests.filter((g) => g.event_id === eventId);
 
   return (
     <div className="mt-2 pt-2 border-t border-[var(--border)] space-y-1">
-      <p className="text-xs font-medium text-[var(--text)]">Guests</p>
+      <p className="text-xs font-medium text-[var(--text)]">{t(lang, "calendar_guests")}</p>
       {eventGuests.length === 0 ? (
-        <p className="text-xs text-[var(--text-muted)]">No guests invited yet.</p>
+        <p className="text-xs text-[var(--text-muted)]">{t(lang, "calendar_no_guests")}</p>
       ) : (
         <ul className="space-y-1">
           {eventGuests.map((g) => (
@@ -152,21 +162,19 @@ function GuestList({ eventId, guests, onAdd, onRemove }) {
           required
           value={email}
           onChange={(ev) => setEmail(ev.target.value)}
-          placeholder="Invite by email"
+          placeholder={t(lang, "calendar_invite_placeholder")}
           className="flex-1 min-w-0 border border-[var(--border)] rounded px-2 py-1 text-xs"
         />
         <button type="submit" className="text-xs bg-[var(--action)] text-[var(--action-text)] px-2 py-1 rounded shrink-0">
-          Invite
+          {t(lang, "calendar_invite_button")}
         </button>
       </form>
-      <p className="text-[10px] text-[var(--text-muted)]">
-        Guests are tracked here, but invite emails aren&apos;t sent automatically yet.
-      </p>
+      <p className="text-[10px] text-[var(--text-muted)]">{t(lang, "calendar_invite_disclaimer")}</p>
     </div>
   );
 }
 
-function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRemoveGuest }) {
+function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRemoveGuest, lang }) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div
@@ -192,7 +200,7 @@ function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRem
             className="border border-[var(--border)] rounded px-2 py-1"
           />
           <label className="flex items-center gap-2 cursor-pointer ml-1">
-            <span className="text-[var(--text)]">All day</span>
+            <span className="text-[var(--text)]">{t(lang, "calendar_all_day_toggle")}</span>
             <span className="relative inline-flex items-center shrink-0">
               <input
                 type="checkbox"
@@ -215,7 +223,7 @@ function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRem
               onChange={(ev) => onUpdate(e.id, { start_time: ev.target.value || null })}
               className="border border-[var(--border)] rounded px-2 py-1"
             />
-            <span className="text-[var(--text-muted)]">to</span>
+            <span className="text-[var(--text-muted)]">{t(lang, "calendar_to")}</span>
             <input
               type="time"
               defaultValue={e.end_time ? e.end_time.slice(0, 5) : ""}
@@ -227,17 +235,17 @@ function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRem
         <input
           type="text"
           defaultValue={e.location || ""}
-          placeholder="Location"
+          placeholder={t(lang, "calendar_location_placeholder")}
           onBlur={(ev) => ev.target.value !== (e.location || "") && onUpdate(e.id, { location: ev.target.value || null })}
           className="w-full border border-[var(--border)] rounded px-2 py-1 text-sm"
         />
-        <GuestList eventId={e.id} guests={guests} onAdd={onAddGuest} onRemove={onRemoveGuest} />
+        <GuestList eventId={e.id} guests={guests} onAdd={onAddGuest} onRemove={onRemoveGuest} lang={lang} />
       </div>
     </div>
   );
 }
 
-function NewEventModal({ draft, workspaces, onClose, onCreate }) {
+function NewEventModal({ draft, workspaces, onClose, onCreate, lang }) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(draft.start_date);
   const [allDay, setAllDay] = useState(!draft.start_time);
@@ -275,7 +283,7 @@ function NewEventModal({ draft, workspaces, onClose, onCreate }) {
             autoFocus
             value={title}
             onChange={(ev) => setTitle(ev.target.value)}
-            placeholder="Event title"
+            placeholder={t(lang, "calendar_event_title_placeholder")}
             className="font-medium bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-1 flex-1 min-w-0"
           />
           <button type="button" onClick={onClose} className="text-[var(--text-faint)] hover:text-[var(--text)] shrink-0">
@@ -290,7 +298,7 @@ function NewEventModal({ draft, workspaces, onClose, onCreate }) {
             className="border border-[var(--border)] rounded px-2 py-1"
           />
           <label className="flex items-center gap-2 cursor-pointer ml-1">
-            <span className="text-[var(--text)]">All day</span>
+            <span className="text-[var(--text)]">{t(lang, "calendar_all_day_toggle")}</span>
             <span className="relative inline-flex items-center shrink-0">
               <input
                 type="checkbox"
@@ -311,7 +319,7 @@ function NewEventModal({ draft, workspaces, onClose, onCreate }) {
               onChange={(ev) => setStartTime(ev.target.value)}
               className="border border-[var(--border)] rounded px-2 py-1"
             />
-            <span className="text-[var(--text-muted)]">to</span>
+            <span className="text-[var(--text-muted)]">{t(lang, "calendar_to")}</span>
             <input
               type="time"
               value={endTime}
@@ -324,7 +332,7 @@ function NewEventModal({ draft, workspaces, onClose, onCreate }) {
           type="text"
           value={location}
           onChange={(ev) => setLocation(ev.target.value)}
-          placeholder="Location"
+          placeholder={t(lang, "calendar_location_placeholder")}
           className="w-full border border-[var(--border)] rounded px-2 py-1 text-sm"
         />
         {workspaces.length > 1 && (
@@ -345,15 +353,15 @@ function NewEventModal({ draft, workspaces, onClose, onCreate }) {
           disabled={!title.trim() || !workspaceId || saving}
           className="w-full bg-[var(--action)] text-[var(--action-text)] text-sm px-4 py-1.5 rounded-md disabled:opacity-50"
         >
-          {saving ? "Adding..." : "Add meeting"}
+          {saving ? t(lang, "calendar_adding") : t(lang, "calendar_add_meeting")}
         </button>
-        <p className="text-[10px] text-[var(--text-muted)]">You can invite guests after creating the meeting.</p>
+        <p className="text-[10px] text-[var(--text-muted)]">{t(lang, "calendar_invite_after_create")}</p>
       </form>
     </div>
   );
 }
 
-export default function CalendarView({ events: initialEvents, holidays = [], currentUserId, initialGuests = [], workspaces = [] }) {
+export default function CalendarView({ events: initialEvents, holidays = [], currentUserId, initialGuests = [], workspaces = [], lang = "en" }) {
   const router = useRouter();
   const supabase = createClient();
   const [events, setEvents] = useState(initialEvents);
@@ -460,13 +468,20 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
   return (
     <div className="grid md:grid-cols-[440px_1fr] gap-6 items-start">
       <div className="space-y-4">
-        <DayCard label="Today" dayEvents={todayEvents} variant="today" onSelectEvent={(e) => setEditingEventId(e.id)} />
         <DayCard
-          label="This week"
+          label={t(lang, "calendar_today_card")}
+          dayEvents={todayEvents}
+          variant="today"
+          onSelectEvent={(e) => setEditingEventId(e.id)}
+          lang={lang}
+        />
+        <DayCard
+          label={t(lang, "calendar_this_week_card")}
           dayEvents={thisWeekEvents}
           variant="week"
           showWeekday
           onSelectEvent={(e) => setEditingEventId(e.id)}
+          lang={lang}
         />
       </div>
 
@@ -476,6 +491,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
             key={theme}
             ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin]}
+            locale={FC_LOCALES[lang]}
             initialView="dayGridMonth"
             firstDay={1}
             headerToolbar={{
@@ -484,10 +500,10 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
               right: "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear",
             }}
             buttonText={{
-              multiMonthYear: "Year",
-              dayGridMonth: "Month",
-              timeGridWeek: "Week",
-              timeGridDay: "Day",
+              multiMonthYear: t(lang, "calendar_view_year"),
+              dayGridMonth: t(lang, "calendar_view_month"),
+              timeGridWeek: t(lang, "calendar_view_week"),
+              timeGridDay: t(lang, "calendar_view_day"),
             }}
             height={720}
             expandRows
@@ -624,11 +640,18 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
           guests={guests}
           onAddGuest={addGuest}
           onRemoveGuest={removeGuest}
+          lang={lang}
         />
       )}
 
       {draftEvent && (
-        <NewEventModal draft={draftEvent} workspaces={workspaces} onClose={() => setDraftEvent(null)} onCreate={createEvent} />
+        <NewEventModal
+          draft={draftEvent}
+          workspaces={workspaces}
+          onClose={() => setDraftEvent(null)}
+          onCreate={createEvent}
+          lang={lang}
+        />
       )}
     </div>
   );

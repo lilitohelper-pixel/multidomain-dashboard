@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { t } from "@/lib/i18n";
 
-export default function SignOutButton() {
+export default function SignOutButton({ lang = "en" }) {
   const router = useRouter();
   const supabase = createClient();
 
@@ -15,7 +16,7 @@ export default function SignOutButton() {
 
   return (
     <button onClick={handleSignOut} className="text-[var(--nav-text)] hover:text-[var(--nav-muted)] hover:underline">
-      Sign out
+      {t(lang, "sign_out")}
     </button>
   );
 }

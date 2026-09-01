@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { workspaceLabel, creatorLabel } from "@/lib/displayNames";
 import { buildCategoryIndex, isIncomeCategory, formatSignedAmount } from "@/lib/categories";
+import { getUserLanguage, t } from "@/lib/i18n";
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -17,6 +18,7 @@ export default async function TodayPage() {
     data: { user },
   } = await supabase.auth.getUser();
   const today = todayISO();
+  const lang = await getUserLanguage(supabase, user.id);
 
   const [{ data: tasks }, { data: events }, { data: expenses }, { data: categories }] = await Promise.all([
     supabase.from("tasks").select("*, workspaces(name, is_personal)").eq("due_date", today).order("priority"),
@@ -37,48 +39,48 @@ export default async function TodayPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-semibold">Today</h1>
+      <h1 className="text-2xl font-semibold">{t(lang, "today_title")}</h1>
 
       <section>
-        <h2 className="text-lg font-medium mb-3">Tasks due today</h2>
+        <h2 className="text-lg font-medium mb-3">{t(lang, "today_tasks_heading")}</h2>
         {tasks && tasks.length > 0 ? (
           <ul className="space-y-2">
-            {tasks.map((t) => (
-              <li key={t.id} className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-3 flex justify-between">
-                <span>{t.task}</span>
+            {tasks.map((task) => (
+              <li key={task.id} className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-3 flex justify-between">
+                <span>{task.task}</span>
                 <span className="text-sm text-[var(--text-muted)]">
-                  {t.priority} · {workspaceLabel(t.workspaces)}
-                  {creatorLabel(t, user.id) && ` · ${creatorLabel(t, user.id)}`}
+                  {task.priority} · {workspaceLabel(task.workspaces)}
+                  {creatorLabel(task, user.id) && ` · ${creatorLabel(task, user.id)}`}
                 </span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-[var(--text-muted)]">Nothing due today.</p>
+          <p className="text-[var(--text-muted)]">{t(lang, "today_tasks_empty")}</p>
         )}
       </section>
 
       <section>
-        <h2 className="text-lg font-medium mb-3">Events today</h2>
+        <h2 className="text-lg font-medium mb-3">{t(lang, "today_events_heading")}</h2>
         {events && events.length > 0 ? (
           <ul className="space-y-2">
             {events.map((e) => (
               <li key={e.id} className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-3 flex justify-between">
                 <span>{e.title}</span>
                 <span className="text-sm text-[var(--text-muted)]">
-                  {e.start_time || "All day"} · {workspaceLabel(e.workspaces)}
+                  {e.start_time || t(lang, "calendar_all_day_toggle")} · {workspaceLabel(e.workspaces)}
                   {creatorLabel(e, user.id) && ` · ${creatorLabel(e, user.id)}`}
                 </span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-[var(--text-muted)]">No events today.</p>
+          <p className="text-[var(--text-muted)]">{t(lang, "today_events_empty")}</p>
         )}
       </section>
 
       <section>
-        <h2 className="text-lg font-medium mb-3">This month's net</h2>
+        <h2 className="text-lg font-medium mb-3">{t(lang, "today_net_heading")}</h2>
         <p className={`text-3xl font-semibold ${monthNet < 0 ? "text-[var(--holiday-text)]" : "text-[var(--positive)]"}`}>
           {formatSignedAmount(Math.abs(monthNet), monthNet >= 0)}
         </p>

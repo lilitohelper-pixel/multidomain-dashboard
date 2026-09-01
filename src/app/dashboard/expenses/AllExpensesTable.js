@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useExpenseEditor } from "./useExpenseEditor";
 import ExpenseTableRow from "./ExpenseTableRow";
+import { t } from "@/lib/i18n";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
@@ -20,7 +21,7 @@ function pageNumbers(current, total) {
   return withEllipsis;
 }
 
-export default function AllExpensesTable({ expenses: initialExpenses, categories }) {
+export default function AllExpensesTable({ expenses: initialExpenses, categories, lang = "en" }) {
   const { expenses, byId, categoryOptions, updateExpense, updateCategory, deleteExpense } = useExpenseEditor(
     initialExpenses,
     categories
@@ -44,11 +45,11 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
         <table className="w-full text-sm min-w-[32rem]">
           <thead>
             <tr className="bg-[var(--table-head-bg)] text-[var(--table-head-text)] text-left">
-              <th className="p-2 font-medium">Expense name</th>
-              <th className="p-2 font-medium">Category</th>
-              <th className="p-2 font-medium w-36">Date</th>
-              <th className="p-2 font-medium w-28">Amount</th>
-              <th className="p-2 font-medium w-14">Currency</th>
+              <th className="p-2 font-medium">{t(lang, "expenses_col_name")}</th>
+              <th className="p-2 font-medium">{t(lang, "expenses_col_category")}</th>
+              <th className="p-2 font-medium w-36">{t(lang, "expenses_col_date")}</th>
+              <th className="p-2 font-medium w-28">{t(lang, "expenses_col_amount")}</th>
+              <th className="p-2 font-medium w-14">{t(lang, "expenses_col_currency")}</th>
               <th className="p-2 font-medium w-14"></th>
             </tr>
           </thead>
@@ -56,7 +57,7 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
             {pageRows.length === 0 ? (
               <tr>
                 <td colSpan={6} className="p-4 text-center text-[var(--text-muted)]">
-                  No expenses yet — send one to your bot on Telegram.
+                  {t(lang, "expenses_empty")}
                 </td>
               </tr>
             ) : (
@@ -70,6 +71,7 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
                   onUpdateCategory={updateCategory}
                   onDelete={deleteExpense}
                   rowClassName={i % 2 === 0 ? "bg-[var(--surface-alt)]" : "bg-[var(--surface)]"}
+                  lang={lang}
                 />
               ))
             )}
@@ -79,7 +81,7 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
         <div className="flex items-center gap-2">
-          <span className="text-[var(--text-muted)]">Show</span>
+          <span className="text-[var(--text-muted)]">{t(lang, "expenses_show_rows")}</span>
           {PAGE_SIZE_OPTIONS.map((size) => (
             <button
               key={size}
@@ -93,7 +95,7 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
               {size}
             </button>
           ))}
-          <span className="text-[var(--text-muted)]">rows</span>
+          <span className="text-[var(--text-muted)]">{t(lang, "expenses_rows_label")}</span>
         </div>
 
         {totalPages > 1 && (
@@ -103,7 +105,7 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
               disabled={currentPage === 1}
               className="px-2 py-1 rounded-md text-[var(--action)] disabled:text-[var(--text-faint)] disabled:cursor-not-allowed hover:underline"
             >
-              Prev
+              {t(lang, "expenses_prev")}
             </button>
             {pageNumbers(currentPage, totalPages).map((p) =>
               typeof p === "string" ? (
@@ -127,7 +129,7 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
               disabled={currentPage === totalPages}
               className="px-2 py-1 rounded-md text-[var(--action)] disabled:text-[var(--text-faint)] disabled:cursor-not-allowed hover:underline"
             >
-              Next
+              {t(lang, "expenses_next")}
             </button>
           </div>
         )}

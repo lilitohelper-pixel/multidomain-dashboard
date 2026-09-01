@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { workspaceLabel } from "@/lib/displayNames";
+import { t } from "@/lib/i18n";
 
-export default function SavingsCategoriesManager({ initialCategories, workspaces, savingsParentId }) {
+export default function SavingsCategoriesManager({ initialCategories, workspaces, savingsParentId, lang = "en" }) {
   const supabase = createClient();
   const [categories, setCategories] = useState(initialCategories);
   const [name, setName] = useState("");
@@ -27,9 +28,7 @@ export default function SavingsCategoriesManager({ initialCategories, workspaces
     setSaving(false);
 
     if (error) {
-      setErrorMsg(
-        error.message.toLowerCase().includes("duplicate") ? "That category already exists." : error.message
-      );
+      setErrorMsg(error.message.toLowerCase().includes("duplicate") ? t(lang, "savings_duplicate") : error.message);
       return;
     }
     setCategories((prev) => [...prev, data]);
@@ -37,7 +36,7 @@ export default function SavingsCategoriesManager({ initialCategories, workspaces
   }
 
   async function deleteCategory(cat) {
-    if (!window.confirm(`Delete "${cat.name}"?`)) return;
+    if (!window.confirm(t(lang, "savings_delete_confirm", { name: cat.name }))) return;
 
     const previous = categories;
     setCategories((prev) => prev.filter((c) => c.id !== cat.id));
@@ -46,7 +45,7 @@ export default function SavingsCategoriesManager({ initialCategories, workspaces
       setCategories(previous);
       window.alert(
         error.message.toLowerCase().includes("foreign key")
-          ? "Can't delete — this category already has expenses assigned to it."
+          ? t(lang, "savings_delete_fk_error")
           : `Failed to delete: ${error.message}`
       );
     }
@@ -56,18 +55,18 @@ export default function SavingsCategoriesManager({ initialCategories, workspaces
     <div className="space-y-4">
       <form onSubmit={addCategory} className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4 flex flex-wrap items-end gap-3">
         <div className="flex-1 min-w-[10rem]">
-          <label className="block text-sm text-[var(--text-muted)] mb-1">New Savings goal</label>
+          <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "savings_new_goal_label")}</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. New car, Emergency fund"
+            placeholder={t(lang, "savings_new_goal_placeholder")}
             className="w-full border rounded-md px-3 py-1.5 text-sm"
           />
         </div>
         {workspaces.length > 1 && (
           <div>
-            <label className="block text-sm text-[var(--text-muted)] mb-1">Workspace</label>
+            <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_workspace_label")}</label>
             <select
               value={workspaceId}
               onChange={(e) => setWorkspaceId(e.target.value)}
@@ -86,13 +85,13 @@ export default function SavingsCategoriesManager({ initialCategories, workspaces
           disabled={saving || !name.trim() || !workspaceId}
           className="bg-[var(--action)] text-[var(--action-text)] text-sm px-4 py-1.5 rounded-md disabled:opacity-50"
         >
-          {saving ? "Adding..." : "Add"}
+          {saving ? t(lang, "expenses_adding") : t(lang, "savings_add_button")}
         </button>
       </form>
       {errorMsg && <p className="text-sm text-[var(--holiday-text)]">{errorMsg}</p>}
 
       {categories.length === 0 ? (
-        <p className="text-[var(--text-muted)]">No custom Savings categories yet.</p>
+        <p className="text-[var(--text-muted)]">{t(lang, "savings_empty")}</p>
       ) : (
         <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] divide-y divide-[var(--border)]">
           {categories.map((c) => (
@@ -103,7 +102,7 @@ export default function SavingsCategoriesManager({ initialCategories, workspaces
                   <span className="text-sm text-[var(--text-muted)] ml-2">{workspaceLabel(c.workspaces)}</span>
                 )}
               </div>
-              <button onClick={() => deleteCategory(c)} title="Delete category" className="text-[var(--text-faint)] hover:text-[var(--holiday-text)]">
+              <button onClick={() => deleteCategory(c)} title={t(lang, "savings_delete_title")} className="text-[var(--text-faint)] hover:text-[var(--holiday-text)]">
                 🗑
               </button>
             </div>

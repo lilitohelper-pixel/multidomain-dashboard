@@ -3,6 +3,13 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { SUPPORTED_LANGUAGES, t } from "@/lib/i18n";
+
+function detectBrowserLanguage() {
+  if (typeof navigator === "undefined") return "en";
+  const code = (navigator.language || "en").slice(0, 2).toLowerCase();
+  return SUPPORTED_LANGUAGES.includes(code) ? code : "en";
+}
 
 export default function LoginPage() {
   return (
@@ -17,6 +24,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const supabase = createClient();
 
+  const [lang] = useState(detectBrowserLanguage);
   const [mode, setMode] = useState("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,8 +33,9 @@ function LoginForm() {
 
   useEffect(() => {
     if (searchParams.get("error") === "confirmation_failed") {
-      setMessage("That confirmation link is invalid or expired — please sign up again.");
+      setMessage(t(lang, "login_confirmation_failed"));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   async function handleSubmit(e) {
@@ -43,7 +52,7 @@ function LoginForm() {
       if (error) {
         setMessage(error.message);
       } else {
-        setMessage("Check your email to confirm your account, then sign in.");
+        setMessage(t(lang, "login_check_email"));
         setMode("signin");
       }
     } else {
@@ -62,12 +71,12 @@ function LoginForm() {
     <div className="min-h-screen flex items-center justify-center bg-[var(--page-bg)] px-4">
       <div className="w-full max-w-sm bg-[var(--surface)] rounded-xl shadow p-8">
         <h1 className="text-2xl font-semibold mb-6 text-center">
-          {mode === "signup" ? "Create an account" : "Sign in"}
+          {mode === "signup" ? t(lang, "login_signup_title") : t(lang, "login_signin_title")}
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[var(--text)] mb-1">Email</label>
+            <label className="block text-sm font-medium text-[var(--text)] mb-1">{t(lang, "login_email")}</label>
             <input
               type="email"
               required
@@ -77,7 +86,7 @@ function LoginForm() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[var(--text)] mb-1">Password</label>
+            <label className="block text-sm font-medium text-[var(--text)] mb-1">{t(lang, "login_password")}</label>
             <input
               type="password"
               required
@@ -94,7 +103,7 @@ function LoginForm() {
             disabled={loading}
             className="w-full bg-[var(--action)] text-[var(--action-text)] rounded-md py-2 font-medium hover:bg-[var(--action-hover)] disabled:opacity-50"
           >
-            {loading ? "..." : mode === "signup" ? "Sign up" : "Sign in"}
+            {loading ? t(lang, "login_signup_loading") : mode === "signup" ? t(lang, "login_signup_button") : t(lang, "login_signin_button")}
           </button>
         </form>
 
@@ -105,7 +114,7 @@ function LoginForm() {
           }}
           className="mt-4 text-sm text-[var(--action)] hover:underline w-full text-center"
         >
-          {mode === "signup" ? "Already have an account? Sign in" : "Need an account? Sign up"}
+          {mode === "signup" ? t(lang, "login_switch_to_signin") : t(lang, "login_switch_to_signup")}
         </button>
       </div>
     </div>

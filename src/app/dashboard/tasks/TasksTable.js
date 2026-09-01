@@ -3,23 +3,30 @@
 import { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { creatorLabel } from "@/lib/displayNames";
+import { t } from "@/lib/i18n";
 
-const ALL_COLUMNS = [
-  { key: "task", label: "Task", sortable: true },
-  { key: "owner_name", label: "Owner", sortable: true },
-  { key: "assigned_by", label: "Assigned by", sortable: true },
-  { key: "created_at", label: "Date of assignment", sortable: true },
-  { key: "due_date", label: "Due date", sortable: true },
-  { key: "priority", label: "Priority", sortable: true },
-  { key: "reminder_enabled", label: "Reminder", sortable: false },
+const COLUMN_KEYS = [
+  { key: "task", labelKey: "tasks_col_task", sortable: true },
+  { key: "owner_name", labelKey: "tasks_col_owner", sortable: true },
+  { key: "assigned_by", labelKey: "tasks_col_assigned_by", sortable: true },
+  { key: "created_at", labelKey: "tasks_col_date_assigned", sortable: true },
+  { key: "due_date", labelKey: "tasks_col_due_date", sortable: true },
+  { key: "priority", labelKey: "tasks_col_priority", sortable: true },
+  { key: "reminder_enabled", labelKey: "tasks_col_reminder", sortable: false },
 ];
 
+// Stored values stay in English (Claude's classification and the DB both use
+// these literally) — only the displayed label is translated per column below.
 const PRIORITY_OPTIONS = ["Low", "Medium", "High"];
 const PRIORITY_ORDER = { Low: 0, Medium: 1, High: 2 };
 const STORAGE_KEY = "tasksTableColumns";
 
+function allColumns(lang) {
+  return COLUMN_KEYS.map((c) => ({ key: c.key, sortable: c.sortable, label: t(lang, c.labelKey) }));
+}
+
 function defaultColumnPrefs() {
-  return ALL_COLUMNS.map((c) => ({ key: c.key, visible: true }));
+  return COLUMN_KEYS.map((c) => ({ key: c.key, visible: true }));
 }
 
 function loadColumnPrefs() {
@@ -28,8 +35,8 @@ function loadColumnPrefs() {
     if (!saved) return defaultColumnPrefs();
     const parsed = JSON.parse(saved);
     const knownKeys = new Set(parsed.map((p) => p.key));
-    const merged = parsed.filter((p) => ALL_COLUMNS.some((c) => c.key === p.key));
-    for (const col of ALL_COLUMNS) {
+    const merged = parsed.filter((p) => COLUMN_KEYS.some((c) => c.key === p.key));
+    for (const col of COLUMN_KEYS) {
       if (!knownKeys.has(col.key)) merged.push({ key: col.key, visible: true });
     }
     return merged;
@@ -47,7 +54,7 @@ function sortValue(task, key, currentUserId) {
   return (task[key] || "").toString().toLowerCase();
 }
 
-export default function TasksTable({ tasks: initialTasks, currentUserId }) {
+export default function TasksTable({ tasks: initialTasks, currentUserId, lang = "en" }) {
   const supabase = createClient();
   const [tasks, setTasks] = useState(initialTasks);
   const [columnPrefs, setColumnPrefs] = useState(defaultColumnPrefs);
@@ -60,6 +67,9 @@ export default function TasksTable({ tasks: initialTasks, currentUserId }) {
   const [filterOwner, setFilterOwner] = useState("All");
   const [sortBy, setSortBy] = useState("due_date");
   const [sortDir, setSortDir] = useState("asc");
+
+  const ALL_COLUMNS = useMemo(() => allColumns(lang), [lang]);
+  const unassignedLabel = t(lang, "tasks_unassigned");
 
   useEffect(() => {
     setColumnPrefs(loadColumnPrefs());
@@ -100,7 +110,7 @@ export default function TasksTable({ tasks: initialTasks, currentUserId }) {
   }
 
   async function deleteTask(task) {
-    if (!window.confirm(`Delete "${task.task}"? This can't be undone.`)) return;
+    if (!window.confirm(t(lang, "tasks_delete_confirm", { task: task.task }))) return;
 
     const previous = tasks;
     setTasks((prev) => prev.filter((t) => t.id !== task.id));
@@ -127,8 +137,8 @@ export default function TasksTable({ tasks: initialTasks, currentUserId }) {
       if (t.owner_name) names.add(t.owner_name);
       else hasUnassigned = true;
     }
-    return [...names].sort().concat(hasUnassigned ? ["(unassigned)"] : []);
-  }, [tasks]);
+    return [...names].sort().concat(hasUnassigned ? [unassignedLabel] : []);
+  }, [tasks, unassignedLabel]);
 
   const visibleTasks = useMemo(() => {
     let result = tasks;
@@ -144,7 +154,7 @@ export default function TasksTable({ tasks: initialTasks, currentUserId }) {
       result = result.filter((t) => t.status === filterStatus);
     }
     if (filterOwner !== "All") {
-      result = result.filter((t) => (filterOwner === "(unassigned)" ? !t.owner_name : t.owner_name === filterOwner));
+      result = result.filter((t) => (filterOwner === unassignedLabel ? !t.owner_name : t.owner_name === filterOwner));
     }
 
     result = [...result].sort((a, b) => {
@@ -156,7 +166,7 @@ export default function TasksTable({ tasks: initialTasks, currentUserId }) {
     });
 
     return result;
-  }, [tasks, searchText, filterPriority, filterStatus, filterOwner, sortBy, sortDir, currentUserId]);
+  }, [tasks, searchText, filterPriority, filterStatus, filterOwner, sortBy, sortDir, currentUserId, unassignedLabel]);
 
   const visibleColumns = columnPrefs
     .filter((c) => c.visible)
@@ -170,34 +180,34 @@ export default function TasksTable({ tasks: initialTasks, currentUserId }) {
           type="text"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          placeholder="Search tasks..."
+          placeholder={t(lang, "tasks_search_placeholder")}
           className="border rounded-md px-3 py-1.5 text-sm flex-1 min-w-[10rem]"
         />
         <select value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm">
-          <option value="All">All priorities</option>
+          <option value="All">{t(lang, "tasks_all_priorities")}</option>
           {PRIORITY_OPTIONS.map((p) => (
-            <option key={p} value={p}>{p}</option>
+            <option key={p} value={p}>{t(lang, `priority_${p.toLowerCase()}`)}</option>
           ))}
         </select>
         <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm">
-          <option value="All">All statuses</option>
-          <option value="Not started">Not started</option>
-          <option value="Done">Done</option>
+          <option value="All">{t(lang, "tasks_all_statuses")}</option>
+          <option value="Not started">{t(lang, "tasks_status_not_started")}</option>
+          <option value="Done">{t(lang, "tasks_status_done")}</option>
         </select>
         <select value={filterOwner} onChange={(e) => setFilterOwner(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm">
-          <option value="All">All owners</option>
+          <option value="All">{t(lang, "tasks_all_owners")}</option>
           {ownerOptions.map((o) => (
             <option key={o} value={o}>{o}</option>
           ))}
         </select>
         <button onClick={() => setShowCustomize((s) => !s)} className="text-sm text-[var(--action)] hover:underline ml-auto">
-          {showCustomize ? "Done customizing" : "Customize columns"}
+          {showCustomize ? t(lang, "tasks_done_customizing") : t(lang, "tasks_customize_columns")}
         </button>
       </div>
 
       {showCustomize && (
         <div className="mb-4 bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4 space-y-2">
-          <p className="text-sm font-medium mb-2">Columns (check to show, arrows to reorder)</p>
+          <p className="text-sm font-medium mb-2">{t(lang, "tasks_customize_hint")}</p>
           {columnPrefs.map((c, i) => {
             const col = ALL_COLUMNS.find((col) => col.key === c.key);
             if (!col) return null;
@@ -223,7 +233,7 @@ export default function TasksTable({ tasks: initialTasks, currentUserId }) {
 
       {visibleTasks.length === 0 ? (
         <p className="text-[var(--text-muted)]">
-          {tasks.length === 0 ? "No tasks yet — send one to your bot on Telegram." : "No tasks match your filters."}
+          {tasks.length === 0 ? t(lang, "tasks_empty_none") : t(lang, "tasks_empty_filtered")}
         </p>
       ) : (
         <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] overflow-x-auto">
@@ -259,13 +269,13 @@ export default function TasksTable({ tasks: initialTasks, currentUserId }) {
                   </td>
                   {visibleColumns.map((col) => (
                     <td key={col.key} className="p-3">
-                      <TaskCell columnKey={col.key} task={task} onUpdate={updateField} currentUserId={currentUserId} />
+                      <TaskCell columnKey={col.key} task={task} onUpdate={updateField} currentUserId={currentUserId} lang={lang} />
                     </td>
                   ))}
                   <td className="p-3">
                     <button
                       onClick={() => deleteTask(task)}
-                      title="Delete task"
+                      title={t(lang, "tasks_delete_title")}
                       className="text-[var(--text-faint)] hover:text-[var(--holiday-text)]"
                     >
                       🗑
@@ -281,7 +291,7 @@ export default function TasksTable({ tasks: initialTasks, currentUserId }) {
   );
 }
 
-function TaskCell({ columnKey, task, onUpdate, currentUserId }) {
+function TaskCell({ columnKey, task, onUpdate, currentUserId, lang }) {
   const isDone = task.status === "Done";
 
   if (columnKey === "task") {
@@ -301,7 +311,7 @@ function TaskCell({ columnKey, task, onUpdate, currentUserId }) {
       <input
         type="text"
         defaultValue={task.owner_name || ""}
-        placeholder="(unassigned)"
+        placeholder={t(lang, "tasks_unassigned")}
         onBlur={(e) =>
           e.target.value !== (task.owner_name || "") && onUpdate(task.id, "owner_name", e.target.value || null)
         }
@@ -342,7 +352,7 @@ function TaskCell({ columnKey, task, onUpdate, currentUserId }) {
       >
         {PRIORITY_OPTIONS.map((p) => (
           <option key={p} value={p}>
-            {p}
+            {t(lang, `priority_${p.toLowerCase()}`)}
           </option>
         ))}
       </select>

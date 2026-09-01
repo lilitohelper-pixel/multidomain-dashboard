@@ -1,47 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { t } from "@/lib/i18n";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { SUPPORTED_LANGUAGES, t } from "@/lib/i18n";
 
-const STORAGE_KEY = "dashboard-theme";
-
-export const THEMES = [
-  {
-    id: "ember",
-    name: "Forest and ember",
-    swatches: ["#16281f", "#c0562a", "#e4a33a"],
-  },
-  {
-    id: "sage",
-    name: "Sage and ochre",
-    swatches: ["#24422f", "#9db0a7", "#d98e2b"],
-  },
-  {
-    id: "umber",
-    name: "Umber and fern",
-    swatches: ["#5a3520", "#4a5d34", "#c0562a"],
-  },
-];
-
-export function applyTheme(id) {
-  document.documentElement.setAttribute("data-theme", id);
-  try {
-    localStorage.setItem(STORAGE_KEY, id);
-  } catch {
-    // Private browsing or storage disabled: the theme still applies for
-    // this session, it just will not be remembered.
-  }
-}
-
-export default function ThemeSwitcher({ inline = false, lang = "en" }) {
-  const [theme, setTheme] = useState("ember");
+export default function LanguageSwitcher({ userId, lang }) {
+  const supabase = createClient();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const wrapRef = useRef(null);
-
-  useEffect(() => {
-    const stored = document.documentElement.getAttribute("data-theme");
-    if (stored) setTheme(stored);
-  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -63,26 +32,23 @@ export default function ThemeSwitcher({ inline = false, lang = "en" }) {
     };
   }, [open]);
 
-  function choose(id) {
-    setTheme(id);
-    applyTheme(id);
+  async function choose(newLang) {
     setOpen(false);
+    if (newLang === lang) return;
+    setSaving(true);
+    await supabase.from("users").update({ language: newLang }).eq("id", userId);
+    setSaving(false);
+    router.refresh();
   }
 
-  const active = THEMES.find((t) => t.id === theme) ?? THEMES[0];
-
-  const wrapStyle = inline
-    ? { position: "relative" }
-    : { position: "fixed", top: 14, right: 18, zIndex: 60 };
-
   return (
-    <div ref={wrapRef} style={wrapStyle}>
+    <div ref={wrapRef} style={{ position: "relative" }}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
+        disabled={saving}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label={`Colour scheme: ${active.name}. Change it`}
         style={{
           display: "flex",
           alignItems: "center",
@@ -98,14 +64,14 @@ export default function ThemeSwitcher({ inline = false, lang = "en" }) {
           cursor: "pointer",
         }}
       >
-        <Swatches colors={active.swatches} />
-        <span style={{ color: "var(--text-muted)" }}>{t(lang, "theme_switcher_label")}</span>
+        <span aria-hidden="true">🌐</span>
+        <span style={{ color: "var(--text-muted)" }}>{t(lang, "language_switcher_label")}</span>
       </button>
 
       {open && (
         <ul
           role="listbox"
-          aria-label="Colour scheme"
+          aria-label={t(lang, "language_switcher_label")}
           style={{
             position: "absolute",
             top: "calc(100% + 6px)",
@@ -113,22 +79,23 @@ export default function ThemeSwitcher({ inline = false, lang = "en" }) {
             margin: 0,
             padding: 4,
             listStyle: "none",
-            width: 208,
+            width: 160,
             borderRadius: 10,
             border: "1px solid var(--border)",
             background: "var(--surface)",
             boxShadow: "0 6px 20px rgba(0, 0, 0, 0.12)",
+            zIndex: 60,
           }}
         >
-          {THEMES.map((t) => {
-            const selected = t.id === theme;
+          {SUPPORTED_LANGUAGES.map((code) => {
+            const selected = code === lang;
             return (
-              <li key={t.id}>
+              <li key={code}>
                 <button
                   type="button"
                   role="option"
                   aria-selected={selected}
-                  onClick={() => choose(t.id)}
+                  onClick={() => choose(code)}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -145,8 +112,7 @@ export default function ThemeSwitcher({ inline = false, lang = "en" }) {
                     cursor: "pointer",
                   }}
                 >
-                  <Swatches colors={t.swatches} />
-                  <span style={{ flex: 1 }}>{t.name}</span>
+                  <span style={{ flex: 1 }}>{t(lang, `language_${code}`)}</span>
                   {selected && (
                     <span aria-hidden="true" style={{ color: "var(--action)" }}>
                       ✓
@@ -159,27 +125,5 @@ export default function ThemeSwitcher({ inline = false, lang = "en" }) {
         </ul>
       )}
     </div>
-  );
-}
-
-function Swatches({ colors }) {
-  return (
-    <span
-      aria-hidden="true"
-      style={{ display: "inline-flex", gap: 3, flex: "none" }}
-    >
-      {colors.map((c) => (
-        <span
-          key={c}
-          style={{
-            width: 10,
-            height: 10,
-            borderRadius: 3,
-            background: c,
-            boxShadow: "inset 0 0 0 1px rgba(0, 0, 0, 0.08)",
-          }}
-        />
-      ))}
-    </span>
   );
 }

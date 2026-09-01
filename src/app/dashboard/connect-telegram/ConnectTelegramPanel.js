@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { t } from "@/lib/i18n";
 
 // Same alphabet the bot uses for its own generateLinkCode (excludes
 // visually ambiguous characters like 0/O and 1/I).
@@ -16,7 +17,7 @@ function randomCode() {
   return Array.from({ length: CODE_LENGTH }, () => CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]).join("");
 }
 
-export default function ConnectTelegramPanel({ userId, initiallyLinked }) {
+export default function ConnectTelegramPanel({ userId, initiallyLinked, lang = "en" }) {
   const supabase = createClient();
   const [linked, setLinked] = useState(initiallyLinked);
   const [code, setCode] = useState(null);
@@ -70,10 +71,8 @@ export default function ConnectTelegramPanel({ userId, initiallyLinked }) {
   if (linked) {
     return (
       <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4 space-y-3">
-        <p className="text-[var(--positive)] font-medium">✅ Telegram is connected.</p>
-        <p className="text-sm text-[var(--text-muted)]">
-          You can send tasks, expenses, and events straight from your Telegram chat with the bot.
-        </p>
+        <p className="text-[var(--positive)] font-medium">{t(lang, "connect_telegram_connected")}</p>
+        <p className="text-sm text-[var(--text-muted)]">{t(lang, "connect_telegram_connected_desc")}</p>
         <button
           onClick={async () => {
             const { data } = await supabase.from("users").select("telegram_chat_id").eq("id", userId).single();
@@ -84,7 +83,7 @@ export default function ConnectTelegramPanel({ userId, initiallyLinked }) {
           disabled={loading}
           className="text-sm text-[var(--action)] hover:underline disabled:opacity-50"
         >
-          Link a different Telegram account instead
+          {t(lang, "connect_telegram_relink")}
         </button>
         {errorMsg && <p className="text-sm text-[var(--holiday-text)]">{errorMsg}</p>}
       </div>
@@ -96,7 +95,7 @@ export default function ConnectTelegramPanel({ userId, initiallyLinked }) {
       <p className="text-sm text-[var(--text-muted)]">
         {BOT_USERNAME ? (
           <>
-            Open{" "}
+            {t(lang, "connect_telegram_open")}{" "}
             <a
               href={`https://t.me/${BOT_USERNAME}`}
               target="_blank"
@@ -105,10 +104,10 @@ export default function ConnectTelegramPanel({ userId, initiallyLinked }) {
             >
               @{BOT_USERNAME}
             </a>{" "}
-            on Telegram and send it this code:
+            {t(lang, "connect_telegram_on_telegram")}
           </>
         ) : (
-          "Message your Telegram bot with this code:"
+          t(lang, "connect_telegram_message_bot")
         )}
       </p>
 
@@ -117,10 +116,10 @@ export default function ConnectTelegramPanel({ userId, initiallyLinked }) {
           {code}
         </div>
       ) : (
-        <div className="text-sm text-[var(--text-muted)]">Generating a code…</div>
+        <div className="text-sm text-[var(--text-muted)]">{t(lang, "connect_telegram_generating")}</div>
       )}
 
-      <p className="text-xs text-[var(--text-faint)]">This code expires in 15 minutes.</p>
+      <p className="text-xs text-[var(--text-faint)]">{t(lang, "connect_telegram_expires")}</p>
 
       <div className="flex items-center gap-3">
         <button
@@ -128,9 +127,9 @@ export default function ConnectTelegramPanel({ userId, initiallyLinked }) {
           disabled={loading}
           className="text-sm text-[var(--action)] hover:underline disabled:opacity-50"
         >
-          Generate a new code
+          {t(lang, "connect_telegram_new_code")}
         </button>
-        <span className="text-xs text-[var(--text-faint)]">Waiting for you to connect…</span>
+        <span className="text-xs text-[var(--text-faint)]">{t(lang, "connect_telegram_waiting")}</span>
       </div>
 
       {errorMsg && <p className="text-sm text-[var(--holiday-text)]">{errorMsg}</p>}
