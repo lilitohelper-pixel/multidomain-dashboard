@@ -258,6 +258,24 @@ export default function ExpenseCategoryCharts({
         </button>
       </div>
 
+      {showManageSavings && (
+        <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-medium">{t(lang, "expenses_manage_savings")}</h3>
+            <button onClick={() => setShowManageSavings(false)} className="text-sm text-[var(--action)] hover:underline">
+              {t(lang, "expenses_close")}
+            </button>
+          </div>
+          <CategoriesManager
+            initialCategories={initialCustomCategories}
+            topLevelCategories={topLevelCategories}
+            workspaces={workspaces}
+            defaultWorkspaceId={defaultWorkspaceId}
+            lang={lang}
+          />
+        </div>
+      )}
+
       <AddExpenseForm
         categoryOptions={categoryOptions}
         workspaces={workspaces}
@@ -407,23 +425,6 @@ export default function ExpenseCategoryCharts({
         </div>
       </div>
 
-      {showManageSavings && (
-        <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-medium">{t(lang, "expenses_manage_savings")}</h3>
-            <button onClick={() => setShowManageSavings(false)} className="text-sm text-[var(--action)] hover:underline">
-              {t(lang, "expenses_close")}
-            </button>
-          </div>
-          <CategoriesManager
-            initialCategories={initialCustomCategories}
-            topLevelCategories={topLevelCategories}
-            workspaces={workspaces}
-            defaultWorkspaceId={defaultWorkspaceId}
-            lang={lang}
-          />
-        </div>
-      )}
     </section>
   );
 }
