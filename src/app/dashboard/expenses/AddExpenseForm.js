@@ -9,13 +9,13 @@ function todayISO() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 }
 
-export default function AddExpenseForm({ categoryOptions, workspaces, onAdd, lang = "en" }) {
+export default function AddExpenseForm({ categoryOptions, workspaces, defaultWorkspaceId, onAdd, lang = "en" }) {
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [date, setDate] = useState(todayISO());
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState("USD");
-  const [workspaceId, setWorkspaceId] = useState(workspaces[0]?.id || "");
+  const [workspaceId, setWorkspaceId] = useState(defaultWorkspaceId || workspaces[0]?.id || "");
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -110,7 +110,7 @@ export default function AddExpenseForm({ categoryOptions, workspaces, onAdd, lan
           >
             {workspaces.map((w) => (
               <option key={w.id} value={w.id}>
-                {workspaceLabel(w)}
+                {workspaceLabel(w, lang)}
               </option>
             ))}
           </select>

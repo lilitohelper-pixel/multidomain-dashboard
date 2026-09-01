@@ -4,7 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import SignOutButton from "./SignOutButton";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import WorkspaceSwitcher from "@/components/WorkspaceSwitcher";
 import { getUserLanguage, t } from "@/lib/i18n";
+import { getUserWorkspaces, getActiveWorkspaceId } from "@/lib/workspace";
 
 export default async function DashboardLayout({ children }) {
   const supabase = await createClient();
@@ -17,6 +19,8 @@ export default async function DashboardLayout({ children }) {
   }
 
   const lang = await getUserLanguage(supabase, user.id);
+  const workspaces = await getUserWorkspaces(supabase, user.id);
+  const activeWorkspaceId = await getActiveWorkspaceId(supabase, user.id, workspaces);
 
   return (
     <div className="min-h-screen bg-[var(--page-bg)]">
@@ -40,6 +44,7 @@ export default async function DashboardLayout({ children }) {
             </Link>
           </nav>
           <div className="flex items-center gap-4 text-sm text-[var(--nav-muted)]">
+            <WorkspaceSwitcher userId={user.id} workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} lang={lang} />
             <LanguageSwitcher userId={user.id} lang={lang} />
             <ThemeSwitcher inline lang={lang} />
             <span>{user.email}</span>

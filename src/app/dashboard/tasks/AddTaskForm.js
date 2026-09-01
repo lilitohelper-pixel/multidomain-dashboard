@@ -8,7 +8,7 @@ import { t } from "@/lib/i18n";
 
 const PRIORITY_OPTIONS = ["Low", "Medium", "High"];
 
-export default function AddTaskForm({ workspaces, lang = "en" }) {
+export default function AddTaskForm({ workspaces, defaultWorkspaceId, lang = "en" }) {
   const router = useRouter();
   const supabase = createClient();
 
@@ -16,7 +16,7 @@ export default function AddTaskForm({ workspaces, lang = "en" }) {
   const [priority, setPriority] = useState("Medium");
   const [dueDate, setDueDate] = useState("");
   const [ownerName, setOwnerName] = useState("");
-  const [workspaceId, setWorkspaceId] = useState(workspaces[0]?.id || "");
+  const [workspaceId, setWorkspaceId] = useState(defaultWorkspaceId || workspaces[0]?.id || "");
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -106,7 +106,7 @@ export default function AddTaskForm({ workspaces, lang = "en" }) {
           >
             {workspaces.map((w) => (
               <option key={w.id} value={w.id}>
-                {workspaceLabel(w)}
+                {workspaceLabel(w, lang)}
               </option>
             ))}
           </select>

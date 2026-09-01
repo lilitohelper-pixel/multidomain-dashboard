@@ -245,14 +245,14 @@ function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRem
   );
 }
 
-function NewEventModal({ draft, workspaces, onClose, onCreate, lang }) {
+function NewEventModal({ draft, workspaces, defaultWorkspaceId, onClose, onCreate, lang }) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(draft.start_date);
   const [allDay, setAllDay] = useState(!draft.start_time);
   const [startTime, setStartTime] = useState(draft.start_time ? draft.start_time.slice(0, 5) : "09:00");
   const [endTime, setEndTime] = useState("");
   const [location, setLocation] = useState("");
-  const [workspaceId, setWorkspaceId] = useState(workspaces[0]?.id || "");
+  const [workspaceId, setWorkspaceId] = useState(defaultWorkspaceId || workspaces[0]?.id || "");
   const [saving, setSaving] = useState(false);
 
   async function handleSubmit(ev) {
@@ -343,7 +343,7 @@ function NewEventModal({ draft, workspaces, onClose, onCreate, lang }) {
           >
             {workspaces.map((w) => (
               <option key={w.id} value={w.id}>
-                {workspaceLabel(w)}
+                {workspaceLabel(w, lang)}
               </option>
             ))}
           </select>
@@ -361,7 +361,7 @@ function NewEventModal({ draft, workspaces, onClose, onCreate, lang }) {
   );
 }
 
-export default function CalendarView({ events: initialEvents, holidays = [], currentUserId, initialGuests = [], workspaces = [], lang = "en" }) {
+export default function CalendarView({ events: initialEvents, holidays = [], currentUserId, initialGuests = [], workspaces = [], defaultWorkspaceId, lang = "en" }) {
   const router = useRouter();
   const supabase = createClient();
   const [events, setEvents] = useState(initialEvents);
@@ -648,6 +648,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
         <NewEventModal
           draft={draftEvent}
           workspaces={workspaces}
+          defaultWorkspaceId={defaultWorkspaceId}
           onClose={() => setDraftEvent(null)}
           onCreate={createEvent}
           lang={lang}

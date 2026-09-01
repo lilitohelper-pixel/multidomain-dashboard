@@ -137,6 +137,7 @@ export default function ExpenseCategoryCharts({
   expenses: initialExpenses,
   categories,
   workspaces,
+  defaultWorkspaceId,
   topLevelCategories,
   initialCustomCategories,
   currentUserId,
@@ -248,7 +249,13 @@ export default function ExpenseCategoryCharts({
 
   return (
     <section className="space-y-4">
-      <AddExpenseForm categoryOptions={categoryOptions} workspaces={workspaces} onAdd={addExpense} lang={lang} />
+      <AddExpenseForm
+        categoryOptions={categoryOptions}
+        workspaces={workspaces}
+        defaultWorkspaceId={defaultWorkspaceId}
+        onAdd={addExpense}
+        lang={lang}
+      />
 
       <div className="grid md:grid-cols-[65fr_35fr] gap-6">
         <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] overflow-x-auto">
@@ -403,6 +410,7 @@ export default function ExpenseCategoryCharts({
             initialCategories={initialCustomCategories}
             topLevelCategories={topLevelCategories}
             workspaces={workspaces}
+            defaultWorkspaceId={defaultWorkspaceId}
             lang={lang}
           />
         </div>

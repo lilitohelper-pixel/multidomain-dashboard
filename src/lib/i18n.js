@@ -143,6 +143,8 @@ const dictionaries = {
     language_en: "English",
     language_hu: "Hungarian",
     language_ru: "Russian",
+    workspace_personal_label: "Personal",
+    workspace_switcher_label: "Workspace",
   },
   hu: {
     nav_today: "Ma",
@@ -286,6 +288,8 @@ const dictionaries = {
     language_en: "Angol",
     language_hu: "Magyar",
     language_ru: "Orosz",
+    workspace_personal_label: "Személyes",
+    workspace_switcher_label: "Munkaterület",
   },
   ru: {
     nav_today: "Сегодня",
@@ -429,6 +433,8 @@ const dictionaries = {
     language_en: "Английский",
     language_hu: "Венгерский",
     language_ru: "Русский",
+    workspace_personal_label: "Личное",
+    workspace_switcher_label: "Рабочее пространство",
   },
 };
 

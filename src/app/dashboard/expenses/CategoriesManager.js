@@ -5,12 +5,12 @@ import { createClient } from "@/lib/supabase/client";
 import { workspaceLabel } from "@/lib/displayNames";
 import { t, translateCategoryName } from "@/lib/i18n";
 
-export default function CategoriesManager({ initialCategories, topLevelCategories, workspaces, lang = "en" }) {
+export default function CategoriesManager({ initialCategories, topLevelCategories, workspaces, defaultWorkspaceId, lang = "en" }) {
   const supabase = createClient();
   const [categories, setCategories] = useState(initialCategories);
   const [name, setName] = useState("");
   const [parentId, setParentId] = useState(topLevelCategories[0]?.id || "");
-  const [workspaceId, setWorkspaceId] = useState(workspaces[0]?.id || "");
+  const [workspaceId, setWorkspaceId] = useState(defaultWorkspaceId || workspaces[0]?.id || "");
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -91,7 +91,7 @@ export default function CategoriesManager({ initialCategories, topLevelCategorie
             >
               {workspaces.map((w) => (
                 <option key={w.id} value={w.id}>
-                  {workspaceLabel(w)}
+                  {workspaceLabel(w, lang)}
                 </option>
               ))}
             </select>
@@ -117,7 +117,7 @@ export default function CategoriesManager({ initialCategories, topLevelCategorie
                 <span className="text-[var(--text-muted)]">{translateCategoryName(lang, parentNameById[c.parent_id] || "")}: </span>
                 <span>{c.name}</span>
                 {workspaces.length > 1 && (
-                  <span className="text-sm text-[var(--text-muted)] ml-2">{workspaceLabel(c.workspaces)}</span>
+                  <span className="text-sm text-[var(--text-muted)] ml-2">{workspaceLabel(c.workspaces, lang)}</span>
                 )}
               </div>
               <button onClick={() => deleteCategory(c)} title={t(lang, "savings_delete_title")} className="text-[var(--text-faint)] hover:text-[var(--holiday-text)]">

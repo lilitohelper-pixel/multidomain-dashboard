@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { workspaceLabel, creatorLabel } from "@/lib/displayNames";
 import { buildCategoryIndex, isIncomeCategory, formatSignedAmount } from "@/lib/categories";
 import { getUserLanguage, t } from "@/lib/i18n";
+import { getUserWorkspaces, getActiveWorkspaceId } from "@/lib/workspace";
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -19,15 +20,28 @@ export default async function TodayPage() {
   } = await supabase.auth.getUser();
   const today = todayISO();
   const lang = await getUserLanguage(supabase, user.id);
+  const workspaces = await getUserWorkspaces(supabase, user.id);
+  const activeWorkspaceId = await getActiveWorkspaceId(supabase, user.id, workspaces);
 
   const [{ data: tasks }, { data: events }, { data: expenses }, { data: categories }] = await Promise.all([
-    supabase.from("tasks").select("*, workspaces(name, is_personal)").eq("due_date", today).order("priority"),
-    supabase.from("calendar_events").select("*, workspaces(name, is_personal)").eq("start_date", today).order("start_time"),
+    supabase
+      .from("tasks")
+      .select("*, workspaces(name, is_personal)")
+      .eq("due_date", today)
+      .eq("workspace_id", activeWorkspaceId)
+      .order("priority"),
+    supabase
+      .from("calendar_events")
+      .select("*, workspaces(name, is_personal)")
+      .eq("start_date", today)
+      .eq("workspace_id", activeWorkspaceId)
+      .order("start_time"),
     supabase
       .from("expenses")
       .select("amount, category_id, workspaces(name, is_personal)")
       .gte("date", firstOfMonthISO())
-      .lte("date", today),
+      .lte("date", today)
+      .eq("workspace_id", activeWorkspaceId),
     supabase.from("expense_categories").select("id, parent_id, name"),
   ]);
 
@@ -49,7 +63,7 @@ export default async function TodayPage() {
               <li key={task.id} className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-3 flex justify-between">
                 <span>{task.task}</span>
                 <span className="text-sm text-[var(--text-muted)]">
-                  {task.priority} · {workspaceLabel(task.workspaces)}
+                  {task.priority} · {workspaceLabel(task.workspaces, lang)}
                   {creatorLabel(task, user.id) && ` · ${creatorLabel(task, user.id)}`}
                 </span>
               </li>
@@ -68,7 +82,7 @@ export default async function TodayPage() {
               <li key={e.id} className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-3 flex justify-between">
                 <span>{e.title}</span>
                 <span className="text-sm text-[var(--text-muted)]">
-                  {e.start_time || t(lang, "calendar_all_day_toggle")} · {workspaceLabel(e.workspaces)}
+                  {e.start_time || t(lang, "calendar_all_day_toggle")} · {workspaceLabel(e.workspaces, lang)}
                   {creatorLabel(e, user.id) && ` · ${creatorLabel(e, user.id)}`}
                 </span>
               </li>
