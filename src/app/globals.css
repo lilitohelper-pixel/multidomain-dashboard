@@ -59,23 +59,19 @@ body {
   --fc-now-indicator-color: var(--holiday-text);
 }
 
-/* Narrow screens: shrink the toolbar so title + nav + view buttons don't
-   overlap. CalendarView.js also splits the view-switch buttons into a
-   footer toolbar below this width so they never compete with the title
-   for the same row. */
+/* Narrow screens: shrink the toolbar so arrows, title, and view buttons
+   all fit on one row (CalendarView.js also abbreviates the view-switch
+   button labels to single letters below 480px for the same reason). */
 @media (max-width: 640px) {
   .fc .fc-toolbar {
-    gap: 8px;
+    gap: 6px;
   }
   .fc .fc-toolbar-title {
     font-size: 0.9rem;
   }
   .fc .fc-button {
-    padding: 4px 8px;
+    padding: 4px 6px;
     font-size: 0.75rem;
-  }
-  .fc .fc-footerToolbar {
-    margin-top: 8px;
   }
   .fc .fc-daygrid-day-events,
   .fc .fc-event-title,

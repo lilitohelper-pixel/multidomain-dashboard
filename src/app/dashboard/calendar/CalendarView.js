@@ -388,13 +388,13 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
     return () => observer.disconnect();
   }, []);
 
-  // On narrow screens the view-switch buttons (Day/Week/Month/Year) are moved
-  // out of the header toolbar into a footer toolbar below the calendar body,
-  // since fitting prev/next + title + all four view buttons in one row wraps
-  // them on top of the title on real phone widths.
-  const [isMobile, setIsMobile] = useState(false);
+  // Below this width, arrows + title + all four view-switch buttons don't
+  // fit on one line with full button labels, so the labels shrink to single
+  // letters — that keeps the whole toolbar (arrows, title, buttons) on one
+  // row instead of wrapping or needing a separate footer.
+  const [isNarrow, setIsNarrow] = useState(false);
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 640);
+    const check = () => setIsNarrow(window.innerWidth < 480);
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
@@ -479,7 +479,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
 
   return (
     <div className="grid md:grid-cols-[440px_1fr] gap-6 items-start">
-      <div className="space-y-4 order-2 md:order-none">
+      <div className="space-y-4">
         <DayCard
           label={t(lang, "calendar_today_card")}
           dayEvents={todayEvents}
@@ -497,7 +497,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
         />
       </div>
 
-      <div ref={containerRef} className="order-1 md:order-none">
+      <div ref={containerRef}>
         <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] overflow-hidden p-4">
           <FullCalendar
             key={theme}
@@ -506,19 +506,16 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
             locale={FC_LOCALES[lang]}
             initialView="dayGridMonth"
             firstDay={1}
-            headerToolbar={
-              isMobile
-                ? { left: "prev,next", center: "title", right: "" }
-                : { left: "prev,next", center: "title", right: "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear" }
-            }
-            footerToolbar={
-              isMobile ? { left: "", center: "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear", right: "" } : undefined
-            }
+            headerToolbar={{
+              left: "prev,next",
+              center: "title",
+              right: "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear",
+            }}
             buttonText={{
-              multiMonthYear: t(lang, "calendar_view_year"),
-              dayGridMonth: t(lang, "calendar_view_month"),
-              timeGridWeek: t(lang, "calendar_view_week"),
-              timeGridDay: t(lang, "calendar_view_day"),
+              multiMonthYear: isNarrow ? "Y" : t(lang, "calendar_view_year"),
+              dayGridMonth: isNarrow ? "M" : t(lang, "calendar_view_month"),
+              timeGridWeek: isNarrow ? "W" : t(lang, "calendar_view_week"),
+              timeGridDay: isNarrow ? "D" : t(lang, "calendar_view_day"),
             }}
             height={720}
             expandRows
