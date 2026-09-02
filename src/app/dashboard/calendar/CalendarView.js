@@ -6,6 +6,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import multiMonthPlugin from "@fullcalendar/multimonth";
+import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import huLocale from "@fullcalendar/core/locales/hu";
 import ruLocale from "@fullcalendar/core/locales/ru";
@@ -506,20 +507,23 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
           <FullCalendar
             key={theme}
             ref={calendarRef}
-            plugins={[dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin]}
+            plugins={[dayGridPlugin, timeGridPlugin, multiMonthPlugin, listPlugin, interactionPlugin]}
             locale={FC_LOCALES[lang]}
             initialView="dayGridMonth"
             firstDay={1}
             headerToolbar={{
               left: "prev,next",
               center: "title",
-              right: "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear",
+              right: isNarrow
+                ? "timeGridDay,timeGridWeek,dayGridMonth,listWeek"
+                : "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear,listWeek",
             }}
             buttonText={{
-              multiMonthYear: isNarrow ? "Y" : t(lang, "calendar_view_year"),
+              multiMonthYear: t(lang, "calendar_view_year"),
               dayGridMonth: isNarrow ? "M" : t(lang, "calendar_view_month"),
               timeGridWeek: isNarrow ? "W" : t(lang, "calendar_view_week"),
               timeGridDay: isNarrow ? "D" : t(lang, "calendar_view_day"),
+              listWeek: isNarrow ? "L" : t(lang, "calendar_view_list"),
             }}
             height={780}
             expandRows

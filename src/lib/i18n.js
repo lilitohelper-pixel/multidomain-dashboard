@@ -136,6 +136,7 @@ const dictionaries = {
     calendar_view_week: "Week",
     calendar_view_month: "Month",
     calendar_view_year: "Year",
+    calendar_view_list: "List",
     calendar_all_day_toggle: "All day",
     calendar_to: "to",
 
@@ -282,6 +283,7 @@ const dictionaries = {
     calendar_view_week: "Hét",
     calendar_view_month: "Hónap",
     calendar_view_year: "Év",
+    calendar_view_list: "Lista",
     calendar_all_day_toggle: "Egész napos",
     calendar_to: "eddig",
 
@@ -428,6 +430,7 @@ const dictionaries = {
     calendar_view_week: "Неделя",
     calendar_view_month: "Месяц",
     calendar_view_year: "Год",
+    calendar_view_list: "Список",
     calendar_all_day_toggle: "Весь день",
     calendar_to: "до",
 
