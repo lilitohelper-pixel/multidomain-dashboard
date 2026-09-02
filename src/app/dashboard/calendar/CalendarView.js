@@ -482,6 +482,54 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
 
   useEffect(() => () => clearTimeout(dateClickTimerRef.current), []);
 
+  // Swipe left/right to go to the next/previous period, so the tiny
+  // prev/next arrows in the toolbar aren't the only way to navigate on a
+  // touchscreen. Passive listeners only observe the gesture — they never
+  // call preventDefault/stopPropagation — so vertical scrolling in the
+  // day/week views and FullCalendar's own long-press event dragging both
+  // keep working untouched; a touch that starts on an event or on the
+  // toolbar itself is ignored here entirely.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    let tracking = false;
+    let startX = 0;
+    let startY = 0;
+    let startTime = 0;
+
+    function onTouchStart(e) {
+      if (e.touches.length !== 1) return;
+      const target = e.target;
+      if (target.closest(".fc-toolbar") || target.closest(".fc-event")) return;
+      tracking = true;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startTime = Date.now();
+    }
+
+    function onTouchEnd(e) {
+      if (!tracking) return;
+      tracking = false;
+      const touch = e.changedTouches[0];
+      const deltaX = touch.clientX - startX;
+      const deltaY = touch.clientY - startY;
+      if (Date.now() - startTime > 600) return;
+      if (Math.abs(deltaX) < 60 || Math.abs(deltaX) < Math.abs(deltaY) * 1.5) return;
+      const api = calendarRef.current?.getApi();
+      if (!api) return;
+      if (deltaX < 0) api.next();
+      else api.prev();
+    }
+
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchend", onTouchEnd);
+    };
+  }, []);
+
   return (
     <div className="grid md:grid-cols-[440px_1fr] gap-6 items-start">
       <div className="space-y-4">
