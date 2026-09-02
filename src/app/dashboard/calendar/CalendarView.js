@@ -15,10 +15,9 @@ import { workspaceLabel } from "@/lib/displayNames";
 import { t } from "@/lib/i18n";
 
 const FC_LOCALES = { hu: huLocale, ru: ruLocale };
-// Disambiguated short codes (Tue/Thu and Sat/Sun would otherwise both
-// collapse to the same single letter).
+// Disambiguated short codes (Tue/Thu would otherwise both collapse to "T").
 const WEEKDAY_SHORT_BY_LANG = {
-  en: ["SN", "M", "T", "W", "Th", "F", "ST"],
+  en: ["Sun", "M", "T", "W", "Th", "F", "Sat"],
   hu: ["V", "H", "K", "Sze", "Cs", "P", "Szo"],
   ru: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
 };
@@ -204,7 +203,7 @@ function EventEditModal({ event: e, onClose, onUpdate, onDelete, guests, onAddGu
           >
             🗑
           </button>
-          <button onClick={onClose} className="text-[var(--text-faint)] hover:text-[var(--text)] shrink-0">
+          <button onClick={onClose} className="text-[var(--text-faint)] hover:text-[var(--text)] shrink-0 ml-3">
             ✕
           </button>
         </div>

@@ -115,6 +115,22 @@ body {
   --fc-border-color: color-mix(in srgb, var(--border) 25%, transparent);
 }
 
+/* Smaller, non-bold hour labels on the time axis (matching the toolbar
+   title's size, not its weight) — a narrower axis column leaves more of the
+   available width for the actual day columns, since FullCalendar sizes the
+   axis to fit its label content. */
+.fc .fc-timegrid-axis-cushion,
+.fc .fc-timegrid-slot-label-cushion {
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+/* Taller hour rows (1.5x FullCalendar's 1.5em default) so events have more
+   room to sit in and are easier to tap. */
+.fc .fc-timegrid-slot {
+  height: 2.25em;
+}
+
 /* Narrow screens: shrink the toolbar so the title and view buttons fit on
    one row (CalendarView.js also abbreviates the view-switch button labels
    to single letters below 480px for the same reason). */
