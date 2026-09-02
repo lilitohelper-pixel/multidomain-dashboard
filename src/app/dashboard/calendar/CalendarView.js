@@ -472,35 +472,12 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
     // and other async reflows can shift the size afterward). Watching the
     // container with ResizeObserver and recalculating on every real size
     // change fixes it robustly regardless of cause or timing.
-    //
-    // updateSize() can itself nudge layout (e.g. a scrollbar appearing or
-    // disappearing), which can re-trigger this same observer — coalescing
-    // bursts to at most once per animation frame, plus a hard cap on how
-    // many times it can fire in a rolling second, keeps a feedback loop
-    // like that from pinning the CPU instead of just settling out quickly.
     if (!containerRef.current) return;
-    let rafId = null;
-    let fireCount = 0;
-    let windowStart = Date.now();
     const observer = new ResizeObserver(() => {
-      if (rafId) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        const now = Date.now();
-        if (now - windowStart > 1000) {
-          windowStart = now;
-          fireCount = 0;
-        }
-        fireCount++;
-        if (fireCount > 30) return;
-        calendarRef.current?.getApi()?.updateSize();
-      });
+      calendarRef.current?.getApi()?.updateSize();
     });
     observer.observe(containerRef.current);
-    return () => {
-      observer.disconnect();
-      if (rafId) cancelAnimationFrame(rafId);
-    };
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => () => clearTimeout(dateClickTimerRef.current), []);
@@ -512,16 +489,6 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
   // day/week views and FullCalendar's own long-press event dragging both
   // keep working untouched; a touch that starts on an event or on the
   // toolbar itself is ignored here entirely.
-  //
-  // dayMinWidth widens day columns past the screen on narrow devices, so
-  // FullCalendar's own internal scroller lets you drag to see the columns
-  // that don't fit. That scroller responds to the same horizontal drag this
-  // gesture does, so a plain "any horizontal swipe changes the period" rule
-  // would fight it — every scroll-to-see-more-columns drag would also flip
-  // the month/week. Recording the scroller's position at touch-start and
-  // only changing the period once you're already sitting at its scrolled
-  // edge (and still swiping further that way) lets both coexist: mid-scroll
-  // drags just scroll, edge-swipes navigate.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -530,16 +497,6 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
     let startX = 0;
     let startY = 0;
     let startTime = 0;
-    let scroller = null;
-    let startScrollLeft = 0;
-
-    function findScrollableScroller() {
-      const scrollers = el.querySelectorAll(".fc-scroller");
-      for (const s of scrollers) {
-        if (s.scrollWidth > s.clientWidth + 2) return s;
-      }
-      return null;
-    }
 
     function onTouchStart(e) {
       if (e.touches.length !== 1) return;
@@ -549,8 +506,6 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       startTime = Date.now();
-      scroller = findScrollableScroller();
-      startScrollLeft = scroller ? scroller.scrollLeft : 0;
     }
 
     function onTouchEnd(e) {
@@ -561,13 +516,6 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
       const deltaY = touch.clientY - startY;
       if (Date.now() - startTime > 800) return;
       if (Math.abs(deltaX) < 35 || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return;
-
-      if (scroller) {
-        const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
-        if (deltaX > 0 && startScrollLeft > 4) return;
-        if (deltaX < 0 && startScrollLeft < maxScrollLeft - 4) return;
-      }
-
       const api = calendarRef.current?.getApi();
       if (!api) return;
       if (deltaX < 0) api.next();
@@ -624,7 +572,6 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
               listWeek: isNarrow ? "L" : t(lang, "calendar_view_list"),
             }}
             height={900}
-            dayMinWidth={150}
             expandRows
             dayMaxEventRows={4}
             eventDisplay="block"
