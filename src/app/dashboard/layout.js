@@ -24,7 +24,7 @@ export default async function DashboardLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-[var(--page-bg)]">
-      <header className="bg-[var(--nav-bg)] border-b border-[var(--border)]">
+      <header className="bg-[var(--nav-bg)]">
         <div className="px-4 sm:px-6 pt-3 sm:pt-4 pb-2 flex flex-wrap items-center justify-end gap-3 text-sm text-[var(--nav-muted)]">
           <WorkspaceSwitcher userId={user.id} workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} lang={lang} />
           <LanguageSwitcher userId={user.id} lang={lang} />

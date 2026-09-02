@@ -16,7 +16,7 @@ export default function NavTabs({ lang }) {
   const pathname = usePathname();
 
   return (
-    <nav className="mx-4 sm:mx-6 mb-3 flex rounded-lg border border-white/25 divide-x divide-white/25 overflow-hidden">
+    <nav className="mx-4 sm:mx-6 flex rounded-t-lg border border-b-0 border-white/25 divide-x divide-white/25 overflow-hidden">
       {TABS.map((tab) => {
         const active = tab.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(tab.href);
         return (
