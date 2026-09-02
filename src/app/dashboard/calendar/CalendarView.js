@@ -15,8 +15,10 @@ import { workspaceLabel } from "@/lib/displayNames";
 import { t } from "@/lib/i18n";
 
 const FC_LOCALES = { hu: huLocale, ru: ruLocale };
+// Disambiguated short codes (Tue/Thu and Sat/Sun would otherwise both
+// collapse to the same single letter).
 const WEEKDAY_SHORT_BY_LANG = {
-  en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  en: ["SN", "M", "T", "W", "Th", "F", "ST"],
   hu: ["V", "H", "K", "Sze", "Cs", "P", "Szo"],
   ru: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
 };
@@ -179,7 +181,7 @@ function GuestList({ eventId, guests, onAdd, onRemove, lang }) {
   );
 }
 
-function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRemoveGuest, lang }) {
+function EventEditModal({ event: e, onClose, onUpdate, onDelete, guests, onAddGuest, onRemoveGuest, lang }) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div
@@ -193,6 +195,15 @@ function EventEditModal({ event: e, onClose, onUpdate, guests, onAddGuest, onRem
             onBlur={(ev) => ev.target.value !== e.title && onUpdate(e.id, { title: ev.target.value })}
             className="font-medium bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-1 flex-1 min-w-0"
           />
+          <button
+            onClick={() => {
+              if (window.confirm(t(lang, "calendar_delete_confirm", { title: e.title }))) onDelete(e.id);
+            }}
+            title={t(lang, "calendar_delete_title")}
+            className="text-[var(--text-faint)] hover:text-[var(--holiday-text)] shrink-0"
+          >
+            🗑
+          </button>
           <button onClick={onClose} className="text-[var(--text-faint)] hover:text-[var(--text)] shrink-0">
             ✕
           </button>
@@ -450,6 +461,19 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
     router.refresh();
   }
 
+  async function deleteEvent(id) {
+    const previous = events;
+    setEvents((prev) => prev.filter((e) => e.id !== id));
+    const { error } = await supabase.from("calendar_events").delete().eq("id", id);
+    if (error) {
+      console.error("Failed to delete event:", error.message);
+      setEvents(previous);
+      return;
+    }
+    setEditingEventId(null);
+    router.refresh();
+  }
+
   async function addGuest(eventId, email) {
     const { data, error } = await supabase.from("event_guests").insert({ event_id: eventId, email }).select().single();
     if (error) {
@@ -562,7 +586,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
             headerToolbar={{
               left: "title",
               center: "",
-              right: "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear,listWeek",
+              right: "listWeek,timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear",
             }}
             buttonText={{
               multiMonthYear: isNarrow ? "Y" : t(lang, "calendar_view_year"),
@@ -576,6 +600,14 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
             dayMaxEventRows={4}
             eventDisplay="block"
             eventTimeFormat={{ hour: "numeric", minute: "2-digit", omitZeroMinute: true, meridiem: "short" }}
+            dayHeaderContent={(arg) => {
+              // Tue/Thu and Sat/Sun would otherwise collide as single
+              // letters — only English has a disambiguated short set defined
+              // (WEEKDAY_SHORT_BY_LANG), so hu/ru keep FullCalendar's own
+              // locale-formatted header.
+              if (lang !== "en") return true;
+              return WEEKDAY_SHORT_BY_LANG.en[arg.date.getDay()];
+            }}
             eventContent={(arg) => {
               // Only the month grid gets the bigger, two-line title+time
               // chip — week/day/list views keep FullCalendar's own default
@@ -660,8 +692,15 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
               // elsewhere). Reserving the same event-area height in every
               // cell up front, regardless of content, means every row's
               // *natural* height is already equal before expandRows runs.
+              //
+              // Week/day views reuse this same day-cell rendering for their
+              // all-day row, so the month-view height only applies when the
+              // active view is actually the month grid — otherwise the
+              // all-day row inherits it too and ends up oversized.
               const eventsContainer = arg.el.querySelector(".fc-daygrid-day-events");
-              if (eventsContainer) eventsContainer.style.minHeight = "130px";
+              if (eventsContainer) {
+                eventsContainer.style.minHeight = arg.view.type === "dayGridMonth" ? "130px" : "24px";
+              }
 
               const rootStyle = getComputedStyle(document.documentElement);
               const dayOfWeek = arg.date.getDay();
@@ -717,6 +756,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
           event={editingEvent}
           onClose={() => setEditingEventId(null)}
           onUpdate={updateEvent}
+          onDelete={deleteEvent}
           guests={guests}
           onAddGuest={addGuest}
           onRemoveGuest={removeGuest}

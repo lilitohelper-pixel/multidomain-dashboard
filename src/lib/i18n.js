@@ -139,6 +139,8 @@ const dictionaries = {
     calendar_view_list: "List",
     calendar_all_day_toggle: "All day",
     calendar_to: "to",
+    calendar_delete_title: "Delete event",
+    calendar_delete_confirm: 'Delete "{title}"? This can\'t be undone.',
 
     theme_switcher_label: "Theme",
     language_switcher_label: "Language",
@@ -286,6 +288,8 @@ const dictionaries = {
     calendar_view_list: "Lista",
     calendar_all_day_toggle: "Egész napos",
     calendar_to: "eddig",
+    calendar_delete_title: "Esemény törlése",
+    calendar_delete_confirm: 'Törlöd ezt: „{title}”? Ez nem vonható vissza.',
 
     theme_switcher_label: "Téma",
     language_switcher_label: "Nyelv",
@@ -433,6 +437,8 @@ const dictionaries = {
     calendar_view_list: "Список",
     calendar_all_day_toggle: "Весь день",
     calendar_to: "до",
+    calendar_delete_title: "Удалить событие",
+    calendar_delete_confirm: 'Удалить «{title}»? Это действие необратимо.',
 
     theme_switcher_label: "Тема",
     language_switcher_label: "Язык",

@@ -105,6 +105,16 @@ body {
   color: var(--action-text);
 }
 
+/* Week/day time-grid: barely-visible separator lines between slots/columns,
+   instead of the same solid border used elsewhere in the app. FullCalendar
+   draws its grid lines from --fc-border-color, so overriding it just for
+   these views (via the view-specific class it adds to the root element)
+   fades every line it draws without needing to target each element. */
+.fc-timeGridWeek-view,
+.fc-timeGridDay-view {
+  --fc-border-color: color-mix(in srgb, var(--border) 25%, transparent);
+}
+
 /* Narrow screens: shrink the toolbar so the title and view buttons fit on
    one row (CalendarView.js also abbreviates the view-switch button labels
    to single letters below 480px for the same reason). */
