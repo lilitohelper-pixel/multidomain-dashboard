@@ -560,8 +560,8 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
             initialView="dayGridMonth"
             firstDay={1}
             headerToolbar={{
-              left: "",
-              center: "title",
+              left: "title",
+              center: "",
               right: isNarrow
                 ? "timeGridDay,timeGridWeek,dayGridMonth,listWeek"
                 : "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear,listWeek",

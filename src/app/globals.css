@@ -95,19 +95,19 @@ body {
   color: var(--action-text);
 }
 
-/* Narrow screens: shrink the toolbar so arrows, title, and view buttons
-   all fit on one row (CalendarView.js also abbreviates the view-switch
-   button labels to single letters below 480px for the same reason). */
+/* Narrow screens: shrink the toolbar so the title and view buttons fit on
+   one row (CalendarView.js also abbreviates the view-switch button labels
+   to single letters below 480px for the same reason). */
 @media (max-width: 640px) {
   .fc .fc-toolbar {
     gap: 6px;
   }
   .fc .fc-toolbar-title {
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
   .fc .fc-button {
-    padding: 4px 6px;
-    font-size: 0.75rem;
+    padding: 6px 10px;
+    font-size: 0.85rem;
   }
   .fc .fc-daygrid-day-events,
   .fc .fc-event-title,
