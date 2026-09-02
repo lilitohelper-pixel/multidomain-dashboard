@@ -16,17 +16,17 @@ export default function NavTabs({ lang }) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex gap-1 overflow-x-auto px-4 sm:px-6">
+    <nav className="flex gap-2 overflow-x-auto px-4 sm:px-6 pb-3">
       {TABS.map((tab) => {
         const active = tab.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(tab.href);
         return (
           <Link
             key={tab.href}
             href={tab.href}
-            className={`shrink-0 px-3 sm:px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            className={`shrink-0 px-3 sm:px-4 py-1.5 rounded-lg border text-sm font-medium transition-colors ${
               active
-                ? "border-[var(--action)] text-[var(--nav-text)]"
-                : "border-transparent text-[var(--nav-muted)] hover:text-[var(--nav-text)] hover:border-white/20"
+                ? "border-[var(--action)] bg-[var(--action)]/15 text-[var(--nav-text)]"
+                : "border-white/15 text-[var(--nav-muted)] hover:text-[var(--nav-text)] hover:border-white/30"
             }`}
           >
             {t(lang, tab.key)}
