@@ -118,11 +118,14 @@ body {
 /* Smaller, non-bold hour labels on the time axis (matching the toolbar
    title's size, not its weight) — a narrower axis column leaves more of the
    available width for the actual day columns, since FullCalendar sizes the
-   axis to fit its label content. */
+   axis to fit its label content. Tight padding shrinks the column further;
+   allDayText="" (see CalendarView.js) empties its top-left corner cell but
+   the cell itself still needs this same narrow width. */
 .fc .fc-timegrid-axis-cushion,
 .fc .fc-timegrid-slot-label-cushion {
-  font-size: 0.8rem;
+  font-size: 0.65rem;
   font-weight: 400;
+  padding: 0 2px;
 }
 
 /* Taller hour rows (1.5x FullCalendar's 1.5em default) so events have more

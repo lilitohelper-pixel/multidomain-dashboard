@@ -582,6 +582,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
             locale={FC_LOCALES[lang]}
             initialView="dayGridMonth"
             firstDay={1}
+            allDayText=""
             headerToolbar={{
               left: "title",
               center: "",
