@@ -101,9 +101,18 @@ body {
 @media (max-width: 640px) {
   .fc .fc-toolbar {
     gap: 6px;
+    flex-wrap: nowrap;
+  }
+  .fc .fc-toolbar-chunk:first-child {
+    min-width: 0;
+    overflow: hidden;
   }
   .fc .fc-toolbar-title {
-    font-size: 1rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .fc .fc-button {
     padding: 6px 10px;

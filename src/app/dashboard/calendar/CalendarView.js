@@ -562,12 +562,10 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
             headerToolbar={{
               left: "title",
               center: "",
-              right: isNarrow
-                ? "timeGridDay,timeGridWeek,dayGridMonth,listWeek"
-                : "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear,listWeek",
+              right: "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear,listWeek",
             }}
             buttonText={{
-              multiMonthYear: t(lang, "calendar_view_year"),
+              multiMonthYear: isNarrow ? "Y" : t(lang, "calendar_view_year"),
               dayGridMonth: isNarrow ? "M" : t(lang, "calendar_view_month"),
               timeGridWeek: isNarrow ? "W" : t(lang, "calendar_view_week"),
               timeGridDay: isNarrow ? "D" : t(lang, "calendar_view_day"),
