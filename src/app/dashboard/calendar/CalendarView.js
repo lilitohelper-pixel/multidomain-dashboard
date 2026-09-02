@@ -70,10 +70,22 @@ function dateTimeParts(date) {
   };
 }
 
+// Gives each event a stable color from the theme's category palette (same
+// tokens used for expense-category charts) so the calendar reads as
+// colorful blocks like a typical agenda view, instead of every event
+// sharing one accent color.
+const EVENT_COLOR_COUNT = 9;
+function eventColor(id) {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  return `var(--cat-${(hash % EVENT_COLOR_COUNT) + 1})`;
+}
+
 function toFullCalendarEvent(row) {
   const allDay = !row.start_time;
   const start = allDay ? row.start_date : `${row.start_date}T${row.start_time}`;
   const end = !allDay && row.end_time ? `${row.start_date}T${row.end_time}` : undefined;
+  const color = eventColor(row.id);
 
   return {
     id: row.id,
@@ -81,6 +93,9 @@ function toFullCalendarEvent(row) {
     start,
     end,
     allDay,
+    backgroundColor: color,
+    borderColor: color,
+    textColor: "#ffffff",
     extendedProps: { location: row.location },
   };
 }
@@ -520,6 +535,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
             height={720}
             expandRows
             dayMaxEventRows={2}
+            eventDisplay="block"
             eventTimeFormat={{ hour: "numeric", minute: "2-digit", omitZeroMinute: true, meridiem: "short" }}
             events={fcEvents}
             editable
