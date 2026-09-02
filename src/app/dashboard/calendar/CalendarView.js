@@ -514,8 +514,8 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
       const touch = e.changedTouches[0];
       const deltaX = touch.clientX - startX;
       const deltaY = touch.clientY - startY;
-      if (Date.now() - startTime > 600) return;
-      if (Math.abs(deltaX) < 60 || Math.abs(deltaX) < Math.abs(deltaY) * 1.5) return;
+      if (Date.now() - startTime > 800) return;
+      if (Math.abs(deltaX) < 35 || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return;
       const api = calendarRef.current?.getApi();
       if (!api) return;
       if (deltaX < 0) api.next();
