@@ -63,10 +63,12 @@ body {
    the category palette in CalendarView.js) so the grid reads as friendly
    colourful cards rather than thin dot-and-text list rows. */
 .fc .fc-daygrid-event {
-  border-radius: 6px;
-  padding: 1px 6px;
+  border-radius: 5px;
+  padding: 0px 5px;
   margin-top: 2px;
   font-weight: 600;
+  font-size: 0.72rem;
+  line-height: 1.5;
 }
 .fc .fc-timegrid-event {
   border-radius: 8px;

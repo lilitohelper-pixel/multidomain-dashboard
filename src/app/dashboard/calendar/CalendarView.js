@@ -532,9 +532,9 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
               timeGridWeek: isNarrow ? "W" : t(lang, "calendar_view_week"),
               timeGridDay: isNarrow ? "D" : t(lang, "calendar_view_day"),
             }}
-            height={720}
+            height={780}
             expandRows
-            dayMaxEventRows={2}
+            dayMaxEventRows={4}
             eventDisplay="block"
             eventTimeFormat={{ hour: "numeric", minute: "2-digit", omitZeroMinute: true, meridiem: "short" }}
             events={fcEvents}
@@ -609,7 +609,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
               // cell up front, regardless of content, means every row's
               // *natural* height is already equal before expandRows runs.
               const eventsContainer = arg.el.querySelector(".fc-daygrid-day-events");
-              if (eventsContainer) eventsContainer.style.minHeight = "44px";
+              if (eventsContainer) eventsContainer.style.minHeight = "78px";
 
               const rootStyle = getComputedStyle(document.documentElement);
               const dayOfWeek = arg.date.getDay();
