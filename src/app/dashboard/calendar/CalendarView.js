@@ -571,11 +571,23 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
               timeGridDay: isNarrow ? "D" : t(lang, "calendar_view_day"),
               listWeek: isNarrow ? "L" : t(lang, "calendar_view_list"),
             }}
-            height={780}
+            height={900}
             expandRows
             dayMaxEventRows={4}
             eventDisplay="block"
             eventTimeFormat={{ hour: "numeric", minute: "2-digit", omitZeroMinute: true, meridiem: "short" }}
+            eventContent={(arg) => {
+              // Only the month grid gets the bigger, two-line title+time
+              // chip — week/day/list views keep FullCalendar's own default
+              // rendering, which already suits their layout.
+              if (!arg.view.type.startsWith("dayGrid")) return true;
+              return (
+                <div className="px-0.5 py-px overflow-hidden">
+                  <div className="font-bold leading-tight truncate">{arg.event.title}</div>
+                  {arg.timeText && <div className="text-[0.7em] leading-tight opacity-75">{arg.timeText}</div>}
+                </div>
+              );
+            }}
             events={fcEvents}
             editable
             eventLongPressDelay={250}
@@ -649,7 +661,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
               // cell up front, regardless of content, means every row's
               // *natural* height is already equal before expandRows runs.
               const eventsContainer = arg.el.querySelector(".fc-daygrid-day-events");
-              if (eventsContainer) eventsContainer.style.minHeight = "78px";
+              if (eventsContainer) eventsContainer.style.minHeight = "130px";
 
               const rootStyle = getComputedStyle(document.documentElement);
               const dayOfWeek = arg.date.getDay();
