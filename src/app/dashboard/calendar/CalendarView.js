@@ -203,7 +203,7 @@ function EventEditModal({ event: e, onClose, onUpdate, onDelete, guests, onAddGu
           >
             🗑
           </button>
-          <button onClick={onClose} className="text-[var(--text-faint)] hover:text-[var(--text)] shrink-0 ml-3">
+          <button onClick={onClose} className="text-[var(--text-faint)] hover:text-[var(--text)] shrink-0 ml-6">
             ✕
           </button>
         </div>
