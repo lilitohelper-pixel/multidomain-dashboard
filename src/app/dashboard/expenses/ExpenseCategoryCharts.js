@@ -286,14 +286,14 @@ export default function ExpenseCategoryCharts({
 
       <div className="grid md:grid-cols-[65fr_35fr] gap-6">
         <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] overflow-x-auto">
-          <table className="w-full text-sm min-w-[30rem]">
+          <table className="w-full text-sm min-w-0 sm:min-w-[30rem]">
             <thead>
               <tr className="bg-[var(--table-head-bg)] text-[var(--table-head-text)] text-left">
                 <th className="p-2 font-medium">{t(lang, "expenses_col_name")}</th>
                 <th className="p-2 font-medium">{t(lang, "expenses_col_category")}</th>
-                <th className="p-2 font-medium w-36">{t(lang, "expenses_col_date")}</th>
+                <th className="hidden sm:table-cell p-2 font-medium w-36">{t(lang, "expenses_col_date")}</th>
                 <th className="p-2 font-medium w-28">{t(lang, "expenses_col_amount")}</th>
-                <th className="p-2 font-medium w-14">{t(lang, "expenses_col_currency")}</th>
+                <th className="hidden sm:table-cell p-2 font-medium w-14">{t(lang, "expenses_col_currency")}</th>
                 <th className="p-2 font-medium w-14"></th>
               </tr>
             </thead>
@@ -305,9 +305,9 @@ export default function ExpenseCategoryCharts({
                     <tr key={`empty-${i}`} className={i % 2 === 0 ? "bg-[var(--surface-alt)]" : "bg-[var(--surface)]"}>
                       <td className="p-2">&nbsp;</td>
                       <td className="p-2"></td>
+                      <td className="hidden sm:table-cell p-2"></td>
                       <td className="p-2"></td>
-                      <td className="p-2"></td>
-                      <td className="p-2"></td>
+                      <td className="hidden sm:table-cell p-2"></td>
                       <td className="p-2"></td>
                     </tr>
                   );

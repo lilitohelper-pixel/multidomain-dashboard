@@ -73,7 +73,7 @@ export default function AddTaskForm({ workspaces, defaultWorkspaceId, lang = "en
           className="w-full sm:min-w-[8rem] border rounded-md px-2 py-1.5 text-sm"
         />
       </div>
-      <div className="flex-1 sm:flex-none">
+      <div className="w-full sm:w-auto">
         <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "tasks_col_due_date")}</label>
         <input
           type="date"
@@ -82,7 +82,7 @@ export default function AddTaskForm({ workspaces, defaultWorkspaceId, lang = "en
           className="w-full sm:w-auto border rounded-md px-2 py-1.5 text-sm"
         />
       </div>
-      <div className="flex-1 sm:flex-none">
+      <div className="w-full sm:w-auto">
         <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "tasks_col_priority")}</label>
         <select
           value={priority}

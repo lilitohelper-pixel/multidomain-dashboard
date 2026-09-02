@@ -20,12 +20,12 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
           className="w-full min-w-[7rem] bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-2 py-1"
         />
       </td>
-      <td className="p-1 w-80">
+      <td className="p-1 w-24 sm:w-80">
         <select
           value={e.category_id || ""}
           onChange={(ev) => onUpdateCategory(e.id, ev.target.value)}
           title={currentLabel}
-          className="w-full max-w-[19.25rem] truncate bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-2 py-1 text-sm"
+          className="w-full max-w-[6rem] sm:max-w-[19.25rem] truncate bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-2 py-1 text-sm"
         >
           {!e.category_id && <option value="">{e.category || t(lang, "expenses_uncategorized")}</option>}
           {categoryOptions.map((opt) => (
@@ -35,7 +35,7 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
           ))}
         </select>
       </td>
-      <td className="p-1 w-36">
+      <td className="hidden sm:table-cell p-1 w-36">
         <input
           type="date"
           defaultValue={e.date}
@@ -43,7 +43,7 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
           className="w-full bg-transparent border-none focus:ring-1 focus:ring-[var(--action)] rounded px-2 py-1"
         />
       </td>
-      <td className="p-1 w-28">
+      <td className="p-1 w-24 sm:w-28">
         <div className="flex items-center gap-1">
           <span
             className={`w-3 shrink-0 text-center ${
@@ -66,10 +66,10 @@ export default function ExpenseTableRow({ expense: e, categoryOptions, byId, onU
           />
         </div>
       </td>
-      <td className="p-1 w-14 text-center">
+      <td className="hidden sm:table-cell p-1 w-14 text-center">
         <span className="text-[var(--text-muted)] text-xs">{e.currency || "USD"}</span>
       </td>
-      <td className="p-1 w-14 text-center">
+      <td className="p-1 w-10 sm:w-14 text-center">
         <button
           onClick={() => {
             if (window.confirm(t(lang, "expenses_delete_confirm", { name: e.description || t(lang, "expenses_title") }))) onDelete(e.id);

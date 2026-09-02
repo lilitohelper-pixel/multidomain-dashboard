@@ -44,14 +44,14 @@ export default function AllExpensesTable({ expenses: initialExpenses, categories
   return (
     <div className="space-y-3">
       <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] overflow-x-auto">
-        <table className="w-full text-sm min-w-[32rem]">
+        <table className="w-full text-sm min-w-0 sm:min-w-[32rem]">
           <thead>
             <tr className="bg-[var(--table-head-bg)] text-[var(--table-head-text)] text-left">
               <th className="p-2 font-medium">{t(lang, "expenses_col_name")}</th>
               <th className="p-2 font-medium">{t(lang, "expenses_col_category")}</th>
-              <th className="p-2 font-medium w-36">{t(lang, "expenses_col_date")}</th>
+              <th className="hidden sm:table-cell p-2 font-medium w-36">{t(lang, "expenses_col_date")}</th>
               <th className="p-2 font-medium w-28">{t(lang, "expenses_col_amount")}</th>
-              <th className="p-2 font-medium w-14">{t(lang, "expenses_col_currency")}</th>
+              <th className="hidden sm:table-cell p-2 font-medium w-14">{t(lang, "expenses_col_currency")}</th>
               <th className="p-2 font-medium w-14"></th>
             </tr>
           </thead>

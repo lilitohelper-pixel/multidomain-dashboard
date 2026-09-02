@@ -71,8 +71,8 @@ export default function AddExpenseForm({ categoryOptions, workspaces, defaultWor
           ))}
         </select>
       </div>
-      <div className="w-full sm:w-auto flex gap-3">
-        <div className="flex-1 sm:flex-none">
+      <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-3">
+        <div className="w-full sm:w-auto">
           <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_date_label")}</label>
           <input
             type="date"
@@ -81,25 +81,27 @@ export default function AddExpenseForm({ categoryOptions, workspaces, defaultWor
             className="w-full sm:w-auto border rounded-md px-2 py-1.5 text-sm"
           />
         </div>
-        <div className="w-20">
-          <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_amount_label")}</label>
-          <input
-            type="number"
-            step="0.01"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="w-full border rounded-md px-2 py-1.5 text-sm"
-          />
-        </div>
-        <div className="w-16">
-          <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_currency_label")}</label>
-          <input
-            type="text"
-            value={currency}
-            onChange={(e) => setCurrency(e.target.value)}
-            maxLength={3}
-            className="w-full border rounded-md px-2 py-1.5 text-sm uppercase"
-          />
+        <div className="flex gap-3">
+          <div className="flex-1 sm:flex-none sm:w-20">
+            <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_amount_label")}</label>
+            <input
+              type="number"
+              step="0.01"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-full border rounded-md px-2 py-1.5 text-sm"
+            />
+          </div>
+          <div className="flex-1 sm:flex-none sm:w-16">
+            <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_currency_label")}</label>
+            <input
+              type="text"
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              maxLength={3}
+              className="w-full border rounded-md px-2 py-1.5 text-sm uppercase"
+            />
+          </div>
         </div>
       </div>
       {workspaces.length > 1 && (

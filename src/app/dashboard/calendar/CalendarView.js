@@ -479,7 +479,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
 
   return (
     <div className="grid md:grid-cols-[440px_1fr] gap-6 items-start">
-      <div className="space-y-4">
+      <div className="space-y-4 order-2 md:order-none">
         <DayCard
           label={t(lang, "calendar_today_card")}
           dayEvents={todayEvents}
@@ -497,7 +497,7 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
         />
       </div>
 
-      <div ref={containerRef}>
+      <div ref={containerRef} className="order-1 md:order-none">
         <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] overflow-hidden p-4">
           <FullCalendar
             key={theme}

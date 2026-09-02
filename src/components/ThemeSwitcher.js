@@ -83,23 +83,40 @@ export default function ThemeSwitcher({ inline = false, lang = "en" }) {
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={`Colour scheme: ${active.name}. Change it`}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 7,
-          padding: "5px 10px",
-          borderRadius: 999,
-          border: "1px solid var(--border-strong)",
-          background: "var(--surface)",
-          color: "var(--text)",
-          font: "inherit",
-          fontSize: 13,
-          lineHeight: 1,
-          cursor: "pointer",
-        }}
+        style={
+          inline
+            ? {
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "3px 9px",
+                borderRadius: 999,
+                border: "1px solid rgba(255,255,255,0.18)",
+                background: "rgba(255,255,255,0.08)",
+                color: "var(--nav-text)",
+                font: "inherit",
+                fontSize: 11,
+                lineHeight: 1,
+                cursor: "pointer",
+              }
+            : {
+                display: "flex",
+                alignItems: "center",
+                gap: 7,
+                padding: "5px 10px",
+                borderRadius: 999,
+                border: "1px solid var(--border-strong)",
+                background: "var(--surface)",
+                color: "var(--text)",
+                font: "inherit",
+                fontSize: 13,
+                lineHeight: 1,
+                cursor: "pointer",
+              }
+        }
       >
         <Swatches colors={active.swatches} />
-        <span style={{ color: "var(--text-muted)" }}>{t(lang, "theme_switcher_label")}</span>
+        <span style={{ color: inline ? "var(--nav-muted)" : "var(--text-muted)" }}>{t(lang, "theme_switcher_label")}</span>
       </button>
 
       {open && (

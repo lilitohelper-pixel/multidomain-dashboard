@@ -26,20 +26,20 @@ export default async function DashboardLayout({ children }) {
     <div className="min-h-screen bg-[var(--page-bg)]">
       <header className="bg-[var(--nav-bg)] border-b border-[var(--border)]">
         <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-          <nav className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-medium">
-            <Link href="/dashboard" className="text-[var(--nav-text)] hover:text-[var(--nav-muted)]">
+          <nav className="flex flex-wrap gap-x-2 gap-y-2 text-sm font-medium">
+            <Link href="/dashboard" className="px-3 py-1.5 rounded-full bg-white/10 text-[var(--nav-text)] hover:bg-white/20 transition-colors">
               {t(lang, "nav_today")}
             </Link>
-            <Link href="/dashboard/tasks" className="text-[var(--nav-text)] hover:text-[var(--nav-muted)]">
+            <Link href="/dashboard/tasks" className="px-3 py-1.5 rounded-full bg-white/10 text-[var(--nav-text)] hover:bg-white/20 transition-colors">
               {t(lang, "nav_tasks")}
             </Link>
-            <Link href="/dashboard/expenses" className="text-[var(--nav-text)] hover:text-[var(--nav-muted)]">
+            <Link href="/dashboard/expenses" className="px-3 py-1.5 rounded-full bg-white/10 text-[var(--nav-text)] hover:bg-white/20 transition-colors">
               {t(lang, "nav_expenses")}
             </Link>
-            <Link href="/dashboard/calendar" className="text-[var(--nav-text)] hover:text-[var(--nav-muted)]">
+            <Link href="/dashboard/calendar" className="px-3 py-1.5 rounded-full bg-white/10 text-[var(--nav-text)] hover:bg-white/20 transition-colors">
               {t(lang, "nav_calendar")}
             </Link>
-            <Link href="/dashboard/connect-telegram" className="text-[var(--nav-text)] hover:text-[var(--nav-muted)]">
+            <Link href="/dashboard/connect-telegram" className="px-3 py-1.5 rounded-full bg-white/10 text-[var(--nav-text)] hover:bg-white/20 transition-colors">
               {t(lang, "nav_telegram")}
             </Link>
           </nav>
