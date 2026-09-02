@@ -53,7 +53,7 @@ export default function AddTaskForm({ workspaces, defaultWorkspaceId, lang = "en
 
   return (
     <form onSubmit={handleSubmit} className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4 flex flex-wrap items-end gap-3 mb-4">
-      <div className="flex-1 min-w-[10rem]">
+      <div className="w-full sm:flex-1 sm:min-w-[10rem]">
         <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "tasks_col_task")}</label>
         <input
           type="text"
@@ -63,31 +63,31 @@ export default function AddTaskForm({ workspaces, defaultWorkspaceId, lang = "en
           className="w-full border rounded-md px-3 py-1.5 text-sm"
         />
       </div>
-      <div>
+      <div className="w-full sm:w-auto">
         <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "tasks_col_owner")}</label>
         <input
           type="text"
           value={ownerName}
           onChange={(e) => setOwnerName(e.target.value)}
           placeholder={t(lang, "tasks_unassigned")}
-          className="w-full min-w-[8rem] border rounded-md px-2 py-1.5 text-sm"
+          className="w-full sm:min-w-[8rem] border rounded-md px-2 py-1.5 text-sm"
         />
       </div>
-      <div>
+      <div className="flex-1 sm:flex-none">
         <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "tasks_col_due_date")}</label>
         <input
           type="date"
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
-          className="border rounded-md px-2 py-1.5 text-sm"
+          className="w-full sm:w-auto border rounded-md px-2 py-1.5 text-sm"
         />
       </div>
-      <div>
+      <div className="flex-1 sm:flex-none">
         <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "tasks_col_priority")}</label>
         <select
           value={priority}
           onChange={(e) => setPriority(e.target.value)}
-          className="border rounded-md px-2 py-1.5 text-sm"
+          className="w-full sm:w-auto border rounded-md px-2 py-1.5 text-sm"
         >
           {PRIORITY_OPTIONS.map((p) => (
             <option key={p} value={p}>
@@ -97,12 +97,12 @@ export default function AddTaskForm({ workspaces, defaultWorkspaceId, lang = "en
         </select>
       </div>
       {workspaces.length > 1 && (
-        <div>
+        <div className="w-full sm:w-auto">
           <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_workspace_label")}</label>
           <select
             value={workspaceId}
             onChange={(e) => setWorkspaceId(e.target.value)}
-            className="border rounded-md px-2 py-1.5 text-sm"
+            className="w-full sm:w-auto border rounded-md px-2 py-1.5 text-sm"
           >
             {workspaces.map((w) => (
               <option key={w.id} value={w.id}>
@@ -115,7 +115,7 @@ export default function AddTaskForm({ workspaces, defaultWorkspaceId, lang = "en
       <button
         type="submit"
         disabled={saving || !task.trim() || !workspaceId}
-        className="bg-[var(--action)] text-[var(--action-text)] text-sm px-4 py-1.5 rounded-md disabled:opacity-50"
+        className="w-full sm:w-auto bg-[var(--action)] text-[var(--action-text)] text-sm px-4 py-1.5 rounded-md disabled:opacity-50"
       >
         {saving ? t(lang, "tasks_adding") : t(lang, "tasks_add_button")}
       </button>

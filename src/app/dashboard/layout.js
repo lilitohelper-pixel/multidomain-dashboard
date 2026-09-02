@@ -25,8 +25,8 @@ export default async function DashboardLayout({ children }) {
   return (
     <div className="min-h-screen bg-[var(--page-bg)]">
       <header className="bg-[var(--nav-bg)] border-b border-[var(--border)]">
-        <div className="px-6 py-4 flex items-center justify-between">
-          <nav className="flex gap-6 text-sm font-medium">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+          <nav className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-medium">
             <Link href="/dashboard" className="text-[var(--nav-text)] hover:text-[var(--nav-muted)]">
               {t(lang, "nav_today")}
             </Link>
@@ -43,16 +43,16 @@ export default async function DashboardLayout({ children }) {
               {t(lang, "nav_telegram")}
             </Link>
           </nav>
-          <div className="flex items-center gap-4 text-sm text-[var(--nav-muted)]">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-[var(--nav-muted)]">
             <WorkspaceSwitcher userId={user.id} workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} lang={lang} />
             <LanguageSwitcher userId={user.id} lang={lang} />
             <ThemeSwitcher inline lang={lang} />
-            <span>{user.email}</span>
+            <span className="hidden sm:inline truncate max-w-[12rem]">{user.email}</span>
             <SignOutButton lang={lang} />
           </div>
         </div>
       </header>
-      <main className="px-6 py-8">{children}</main>
+      <main className="px-4 sm:px-6 py-6 sm:py-8 max-w-full overflow-x-hidden">{children}</main>
     </div>
   );
 }

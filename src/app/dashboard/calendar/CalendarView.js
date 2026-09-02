@@ -388,6 +388,18 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
     return () => observer.disconnect();
   }, []);
 
+  // On narrow screens the view-switch buttons (Day/Week/Month/Year) are moved
+  // out of the header toolbar into a footer toolbar below the calendar body,
+  // since fitting prev/next + title + all four view buttons in one row wraps
+  // them on top of the title on real phone widths.
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   const holidayByDate = useMemo(() => {
     const map = {};
     for (const h of holidays) map[h.date] = h.name;
@@ -494,11 +506,14 @@ export default function CalendarView({ events: initialEvents, holidays = [], cur
             locale={FC_LOCALES[lang]}
             initialView="dayGridMonth"
             firstDay={1}
-            headerToolbar={{
-              left: "prev,next",
-              center: "title",
-              right: "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear",
-            }}
+            headerToolbar={
+              isMobile
+                ? { left: "prev,next", center: "title", right: "" }
+                : { left: "prev,next", center: "title", right: "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear" }
+            }
+            footerToolbar={
+              isMobile ? { left: "", center: "timeGridDay,timeGridWeek,dayGridMonth,multiMonthYear", right: "" } : undefined
+            }
             buttonText={{
               multiMonthYear: t(lang, "calendar_view_year"),
               dayGridMonth: t(lang, "calendar_view_month"),

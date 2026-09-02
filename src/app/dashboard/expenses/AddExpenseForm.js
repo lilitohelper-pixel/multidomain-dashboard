@@ -46,7 +46,7 @@ export default function AddExpenseForm({ categoryOptions, workspaces, defaultWor
 
   return (
     <form onSubmit={handleSubmit} className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4 flex flex-wrap items-end gap-3 mb-4">
-      <div className="flex-1 min-w-[8rem]">
+      <div className="w-full sm:flex-1 sm:min-w-[8rem]">
         <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_description_label")}</label>
         <input
           type="text"
@@ -56,12 +56,12 @@ export default function AddExpenseForm({ categoryOptions, workspaces, defaultWor
           className="w-full border rounded-md px-3 py-1.5 text-sm"
         />
       </div>
-      <div className="min-w-[9rem]">
+      <div className="w-full sm:w-auto sm:min-w-[9rem]">
         <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_category_label")}</label>
         <select
           value={categoryId}
           onChange={(e) => setCategoryId(e.target.value)}
-          className="w-full max-w-[11rem] truncate border rounded-md px-2 py-1.5 text-sm"
+          className="w-full sm:max-w-[11rem] truncate border rounded-md px-2 py-1.5 text-sm"
         >
           <option value="">{t(lang, "expenses_uncategorized")}</option>
           {categoryOptions.map((opt) => (
@@ -71,42 +71,44 @@ export default function AddExpenseForm({ categoryOptions, workspaces, defaultWor
           ))}
         </select>
       </div>
-      <div>
-        <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_date_label")}</label>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="border rounded-md px-2 py-1.5 text-sm"
-        />
-      </div>
-      <div className="w-24">
-        <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_amount_label")}</label>
-        <input
-          type="number"
-          step="0.01"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="w-full border rounded-md px-2 py-1.5 text-sm"
-        />
-      </div>
-      <div className="w-20">
-        <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_currency_label")}</label>
-        <input
-          type="text"
-          value={currency}
-          onChange={(e) => setCurrency(e.target.value)}
-          maxLength={3}
-          className="w-full border rounded-md px-2 py-1.5 text-sm uppercase"
-        />
+      <div className="w-full sm:w-auto flex gap-3">
+        <div className="flex-1 sm:flex-none">
+          <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_date_label")}</label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="w-full sm:w-auto border rounded-md px-2 py-1.5 text-sm"
+          />
+        </div>
+        <div className="w-20">
+          <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_amount_label")}</label>
+          <input
+            type="number"
+            step="0.01"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="w-full border rounded-md px-2 py-1.5 text-sm"
+          />
+        </div>
+        <div className="w-16">
+          <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_currency_label")}</label>
+          <input
+            type="text"
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
+            maxLength={3}
+            className="w-full border rounded-md px-2 py-1.5 text-sm uppercase"
+          />
+        </div>
       </div>
       {workspaces.length > 1 && (
-        <div>
+        <div className="w-full sm:w-auto">
           <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_workspace_label")}</label>
           <select
             value={workspaceId}
             onChange={(e) => setWorkspaceId(e.target.value)}
-            className="border rounded-md px-2 py-1.5 text-sm"
+            className="w-full sm:w-auto border rounded-md px-2 py-1.5 text-sm"
           >
             {workspaces.map((w) => (
               <option key={w.id} value={w.id}>
@@ -119,7 +121,7 @@ export default function AddExpenseForm({ categoryOptions, workspaces, defaultWor
       <button
         type="submit"
         disabled={saving || !description.trim() || amount === "" || !workspaceId}
-        className="bg-[var(--action)] text-[var(--action-text)] text-sm px-4 py-1.5 rounded-md disabled:opacity-50"
+        className="w-full sm:w-auto bg-[var(--action)] text-[var(--action-text)] text-sm px-4 py-1.5 rounded-md disabled:opacity-50"
       >
         {saving ? t(lang, "expenses_adding") : t(lang, "expenses_add_button")}
       </button>

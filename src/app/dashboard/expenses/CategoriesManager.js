@@ -57,7 +57,7 @@ export default function CategoriesManager({ initialCategories, topLevelCategorie
   return (
     <div className="space-y-4">
       <form onSubmit={addCategory} className="bg-[var(--surface)] rounded-lg border border-[var(--border)] p-4 flex flex-wrap items-end gap-3">
-        <div className="flex-1 min-w-[10rem]">
+        <div className="w-full sm:flex-1 sm:min-w-[10rem]">
           <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "categories_new_label")}</label>
           <input
             type="text"
@@ -67,12 +67,12 @@ export default function CategoriesManager({ initialCategories, topLevelCategorie
             className="w-full border rounded-md px-3 py-1.5 text-sm"
           />
         </div>
-        <div>
+        <div className="w-full sm:w-auto">
           <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "categories_parent_label")}</label>
           <select
             value={parentId}
             onChange={(e) => setParentId(e.target.value)}
-            className="border rounded-md px-2 py-1.5 text-sm"
+            className="w-full sm:w-auto border rounded-md px-2 py-1.5 text-sm"
           >
             {topLevelCategories.map((c) => (
               <option key={c.id} value={c.id}>
@@ -82,12 +82,12 @@ export default function CategoriesManager({ initialCategories, topLevelCategorie
           </select>
         </div>
         {workspaces.length > 1 && (
-          <div>
+          <div className="w-full sm:w-auto">
             <label className="block text-sm text-[var(--text-muted)] mb-1">{t(lang, "expenses_workspace_label")}</label>
             <select
               value={workspaceId}
               onChange={(e) => setWorkspaceId(e.target.value)}
-              className="border rounded-md px-2 py-1.5 text-sm"
+              className="w-full sm:w-auto border rounded-md px-2 py-1.5 text-sm"
             >
               {workspaces.map((w) => (
                 <option key={w.id} value={w.id}>
@@ -100,7 +100,7 @@ export default function CategoriesManager({ initialCategories, topLevelCategorie
         <button
           type="submit"
           disabled={saving || !name.trim() || !workspaceId || !parentId}
-          className="bg-[var(--action)] text-[var(--action-text)] text-sm px-4 py-1.5 rounded-md disabled:opacity-50"
+          className="w-full sm:w-auto bg-[var(--action)] text-[var(--action-text)] text-sm px-4 py-1.5 rounded-md disabled:opacity-50"
         >
           {saving ? t(lang, "expenses_adding") : t(lang, "savings_add_button")}
         </button>
