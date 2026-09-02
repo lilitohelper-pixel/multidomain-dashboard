@@ -47,9 +47,12 @@ body {
   --fc-button-active-bg-color: var(--action-hover);
   --fc-button-active-border-color: var(--action-hover);
 
-  --fc-event-bg-color: var(--event-dot);
-  --fc-event-border-color: var(--event-dot);
-  --fc-event-text-color: var(--action-text);
+  /* Neutral by default — only all-day events get an explicit accent color
+     (set per-event in CalendarView.js), so a plain timed event doesn't look
+     falsely "color-coded" when nothing assigned it a color. */
+  --fc-event-bg-color: var(--surface-alt);
+  --fc-event-border-color: var(--border-strong);
+  --fc-event-text-color: var(--text);
 
   --fc-more-link-bg-color: var(--surface-alt);
   --fc-more-link-text-color: var(--text-muted);
@@ -59,9 +62,8 @@ body {
   --fc-now-indicator-color: var(--holiday-text);
 }
 
-/* Rounder, chunkier event blocks (each event also gets its own colour from
-   the category palette in CalendarView.js) so the grid reads as friendly
-   colourful cards rather than thin dot-and-text list rows. */
+/* Rounder, chunkier event blocks — plain/neutral by default, with all-day
+   events standing out in the accent color (see CalendarView.js). */
 .fc .fc-daygrid-event {
   border-radius: 5px;
   padding: 0px 5px;
